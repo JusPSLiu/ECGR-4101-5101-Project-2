@@ -9,6 +9,7 @@
 #include "gfx01m2_conf.h"
 #include "gfx_font5x7.h"
 #include <stdlib.h>
+#include <math.h>
 
 /* ILI9341 command set (only the subset used by this driver) */
 #define ILI9341_CMD_SWRESET     0x01U
@@ -271,6 +272,134 @@ void ILI9341_DrawImage(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uns
         for (col = 0; col < w; col++)
         {
             unsigned short color = src_row[col];
+            row_buf[2 * col]     = (uint8_t)(color >> 8);
+            row_buf[2 * col + 1] = (uint8_t)(color & 0xFF);
+        }
+        HAL_SPI_Transmit(ili9341_hspi, row_buf, (uint16_t)(w * 2), HAL_MAX_DELAY);
+    }
+    LCD_CS_High();
+}
+
+/**
+ * @brief  Draw a source image scaled (nearest-neighbor) to dst_w x dst_h.
+ *
+ * The ILI9341 has no hardware scaler - it only writes the bytes you send
+ * to its GRAM window. This does the scaling on the MCU, one destination
+ * row at a time, using fixed-point math to avoid a float divide per pixel.
+ *
+ * @param  img         Source image, row-major, src_w * src_h pixels.
+ * @param  src_w/h     Source image dimensions.
+ * @param  src_stride  Pixels per row in the source's original layout
+ *                      (normally just src_w).
+ * @param  dst_w/h     Desired on-screen size after scaling.
+ */
+// void ILI9341_DrawImageScaled(uint16_t x, uint16_t y, uint16_t src_w, uint16_t src_h, const unsigned short *img, uint16_t src_stride, uint16_t dst_w, uint16_t dst_h)
+// {
+//     static uint8_t row_buf[ILI9341_WIDTH * 2];
+//     uint16_t row, col;
+//     /* 16.16 fixed-point step size through the source image per dest pixel */
+//     uint32_t x_step = ((uint32_t)src_w << 16) / dst_w;
+//     uint32_t y_step = ((uint32_t)src_h << 16) / dst_h;
+//     uint16_t w = dst_w, h = dst_h;
+
+//     if (src_stride == 0U) { src_stride = src_w; }
+//     if ((x >= ILI9341_WIDTH) || (y >= ILI9341_HEIGHT))
+//     {
+//         return;
+//     }
+//     if ((uint32_t)(x + w) > ILI9341_WIDTH)  { w = ILI9341_WIDTH - x; }
+//     if ((uint32_t)(y + h) > ILI9341_HEIGHT) { h = ILI9341_HEIGHT - y; }
+
+//     LCD_SetAddressWindow(x, y, x + w - 1, y + h - 1);
+
+//     HAL_GPIO_WritePin(LCD_DC_GPIO_Port, LCD_DC_Pin, GPIO_PIN_SET);
+//     LCD_CS_Low();
+//     for (row = 0; row < h; row++)
+//     {
+//         uint16_t src_y = (uint16_t)(((uint32_t)row * y_step) >> 16);
+//         const unsigned short *src_row = &img[(uint32_t)src_y * src_stride];
+
+//         for (col = 0; col < w; col++)
+//         {
+//             uint16_t src_x = (uint16_t)(((uint32_t)col * x_step) >> 16);
+//             unsigned short color = src_row[src_x];
+//             row_buf[2 * col]     = (uint8_t)(color >> 8);
+//             row_buf[2 * col + 1] = (uint8_t)(color & 0xFF);
+//         }
+//         HAL_SPI_Transmit(ili9341_hspi, row_buf, (uint16_t)(w * 2), HAL_MAX_DELAY);
+//     }
+//     LCD_CS_High();
+// }
+
+/**
+ * @brief  Draw a source image scaled to dst_w x dst_h and rotated by
+ *         `degrees` (clockwise, 0-360) about the center of the destination box.
+ *
+ * Uses inverse mapping: for every destination pixel, rotate backwards by
+ * -degrees to find the corresponding (possibly fractional) source pixel,
+ * then nearest-neighbor sample it. Destination pixels that land outside
+ * the source image after the inverse rotation (the corners that rotate
+ * "into" empty space) are filled black.
+ *
+ * sinf/cosf are computed once per call, not per pixel, but the per-pixel
+ * float multiply-adds still cost more than the unrotated version - on an
+ * MCU without an FPU this will be noticeably slower.
+ */
+void ILI9341_DrawImageScaled(uint16_t x, uint16_t y, uint16_t src_w, uint16_t src_h,
+                              const unsigned short *img, uint16_t src_stride,
+                              uint16_t dst_w, uint16_t dst_h, float degrees, uint16_t color)
+{
+    static uint8_t row_buf[ILI9341_WIDTH * 2];
+    uint16_t row, col;
+    uint16_t w = dst_w, h = dst_h;
+
+    float theta = degrees * 3.14159265358979323846f / 180.0f;
+    float cos_t = cosf(theta);
+    float sin_t = sinf(theta);
+    /* scale from "un-rotated destination offset" units into source pixels */
+    float sx = (float)src_w / (float)dst_w;
+    float sy = (float)src_h / (float)dst_h;
+    float dst_cx = (float)dst_w / 2.0f;
+    float dst_cy = (float)dst_h / 2.0f;
+    float src_cx = (float)src_w / 2.0f;
+    float src_cy = (float)src_h / 2.0f;
+
+    if (src_stride == 0U) { src_stride = src_w; }
+    if ((x >= ILI9341_WIDTH) || (y >= ILI9341_HEIGHT))
+    {
+        return;
+    }
+    if ((uint32_t)(x + w) > ILI9341_WIDTH)  { w = ILI9341_WIDTH - x; }
+    if ((uint32_t)(y + h) > ILI9341_HEIGHT) { h = ILI9341_HEIGHT - y; }
+
+    LCD_SetAddressWindow(x, y, x + w - 1, y + h - 1);
+
+    HAL_GPIO_WritePin(LCD_DC_GPIO_Port, LCD_DC_Pin, GPIO_PIN_SET);
+    LCD_CS_Low();
+    for (row = 0; row < h; row++)
+    {
+        float oy = (float)row - dst_cy;
+
+        for (col = 0; col < w; col++)
+        {
+            float ox = (float)col - dst_cx;
+            /* inverse-rotate (note the sign) the dest offset back to
+             * "un-rotated" space before mapping into the source image */
+            float rx = ox * cos_t + oy * sin_t;
+            float ry = -ox * sin_t + oy * cos_t;
+            int32_t src_x = (int32_t)(rx * sx + src_cx);
+            int32_t src_y = (int32_t)(ry * sy + src_cy);
+            unsigned short color;
+
+            if ((src_x < 0) || (src_x >= (int32_t)src_w) ||
+                (src_y < 0) || (src_y >= (int32_t)src_h))
+            {
+                color = color; /* outside source image after rotation */
+            }
+            else
+            {
+                color = img[(uint32_t)src_y * src_stride + (uint32_t)src_x];
+            }
             row_buf[2 * col]     = (uint8_t)(color >> 8);
             row_buf[2 * col + 1] = (uint8_t)(color & 0xFF);
         }

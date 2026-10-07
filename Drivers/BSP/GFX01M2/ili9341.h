@@ -30,6 +30,7 @@
 #define ILI9341_COLOR_MAGENTA  0xF81FU
 #define ILI9341_COLOR_ORANGE   0xFD20U
 #define ILI9341_COLOR_GRAY     0x8410U
+#define ILI9341_COLOR_PINK     0xFDF9U
 
 /* Must be called once, after the SPI peripheral and the CS/DC/RESET GPIOs
  * have been initialized. Resets and configures the panel and clears it to black. */
@@ -47,6 +48,8 @@ void ILI9341_DrawRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t c
 void ILI9341_DrawChar(uint16_t x, uint16_t y, char c, uint16_t color, uint16_t bg, uint8_t size);
 void ILI9341_DrawString(uint16_t x, uint16_t y, const char *str, uint16_t color, uint16_t bg, uint8_t size);
 
+// User Added
 void ILI9341_DrawImage(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const unsigned short *img, uint16_t src_stride);
-
+// void ILI9341_DrawImageScaled(uint16_t x, uint16_t y, uint16_t src_w, uint16_t src_h, const unsigned short *img, uint16_t src_stride, uint16_t dst_w, uint16_t dst_h);
+void ILI9341_DrawImageScaled(uint16_t x, uint16_t y, uint16_t src_w, uint16_t src_h, const unsigned short *img, uint16_t src_stride, uint16_t dst_w, uint16_t dst_h, float degrees, uint16_t bg_color);
 #endif /* ILI9341_H */
