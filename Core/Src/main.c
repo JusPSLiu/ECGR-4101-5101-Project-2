@@ -184,8 +184,10 @@ void drawSprite() {
             anim = idle_anim; animlen = idle_anim_len;
             break;
         case 5:
-        default:
             anim = dead_anim; animlen = dead_anim_len;
+            break;
+        default:
+            anim = floss_anim; animlen = floss_anim_len;
     }
 
     if (frameCount >= animlen) frameCount = 0;
