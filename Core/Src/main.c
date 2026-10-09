@@ -52,7 +52,8 @@ static uint8_t Joystick_Read(void);
 /* DRAWING STUFF TO THE SCREEN */
 void drawSprite();
 void readInputs(uint8_t);
-
+/* utils */
+uint8_t clamp(uint8_t, uint8_t, uint8_t);
 
 /* Joystick (B1) bit flags returned by Joystick_Read() */
 #define JOY_LEFT_MASK (1U << 0)
@@ -184,6 +185,9 @@ void drawSprite() {
             anim = idle_anim; animlen = idle_anim_len;
             break;
         case 5:
+            anim = sad_anim; animlen = sad_anim_len;
+            break;
+        case 6:
             anim = dead_anim; animlen = dead_anim_len;
             break;
         default:
@@ -194,6 +198,34 @@ void drawSprite() {
 
     ILI9341_DrawImageScaled(SPRITEX, SPRITEY, 20, 26, (const unsigned short *)anim[frameCount],
            20, 160, 208, 0, 0xFFFF);
+
+    ILI9341_DrawImageScaled(4, 6, 40, 40, (const unsigned short *)battery,
+           41, 40, 40, 0, 0xFFFF);
+    ILI9341_DrawImageScaled(4, 274, 40, 40, (const unsigned short *)heart,
+           41, 40, 40, 0, 0xFFFF);
+    
+    ILI9341_DrawRect(49, 20, 184, 12, ILI9341_COLOR_BLACK);
+    uint8_t battery_percent = 100; // max 182
+    uint8_t happy_percent = 120; // max 182
+
+    battery_percent = clamp(battery_percent, 0, 182);
+    happy_percent = clamp(happy_percent, 0, 182);
+
+    for (int y=21;y<31;y++) {
+      ILI9341_DrawHLine(50, y, battery_percent, ILI9341_COLOR_GREEN);
+      ILI9341_DrawHLine(50+battery_percent, y, 182-battery_percent, ILI9341_COLOR_BLACK);
+    }
+    ILI9341_DrawRect(49, 288, 184, 12, ILI9341_COLOR_BLACK);
+    for (int y=289;y<299;y++) {
+      ILI9341_DrawHLine(50, y, happy_percent, ILI9341_COLOR_RED);
+      ILI9341_DrawHLine(50+happy_percent, y, 182-happy_percent, ILI9341_COLOR_BLACK);
+    }
+}
+
+inline uint8_t clamp(uint8_t val, uint8_t min, uint8_t max) {
+  if (val < min) return min;
+  if (val > max) return max;
+  return val;
 }
 
 static uint8_t Joystick_Read(void) {
