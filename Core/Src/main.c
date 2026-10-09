@@ -36,6 +36,7 @@
 #include "ili9341.h"
 #include <stdio.h>
 #include "sprite.h"
+#include "menu.h"
 
 
 /* Private variables ---------------------------------------------------------*/
@@ -46,10 +47,12 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_SPI1_Init(void);
 
-// static void Demo_ColorBars(void);
-// static void Demo_Shapes(void);
-// static void Demo_Text(void);
-// static void Demo_Joystick(void);
+static uint8_t Joystick_Read(void);
+
+/* DRAWING STUFF TO THE SCREEN */
+void drawSprite();
+void readInputs(uint8_t);
+
 
 /* Joystick (B1) bit flags returned by Joystick_Read() */
 #define JOY_LEFT_MASK (1U << 0)
@@ -57,6 +60,139 @@ static void MX_SPI1_Init(void);
 #define JOY_DOWN_MASK (1U << 2)
 #define JOY_RIGHT_MASK (1U << 3)
 #define JOY_UP_MASK (1U << 4)
+
+// 100x100 pixels, all white (16-bit RGB565 format)
+// 100x100 pixel 2-byte (16-bit RGB565) hex code array for an all-white image
+// A 100x100 2D array of all-white pixels using 16-bit (2-byte) hex codes
+// (0xFFFF for RGB565)
+const unsigned short white_image[200][200] = {
+    [0 ... 199] = {[0 ... 199] = 0xFFFF}};
+
+#define SCREEN_WIDTH 240
+#define SCREEN_HEIGHT 320
+
+#define SPRITE_SIZE 20
+#define DST_SIZE 160
+#define ANIMATION_DELAY 120
+#define ROTATION 0.0f
+#define SPRITEX 40
+#define SPRITEY 56
+
+#define DEBOUNCE_LEN 1
+
+
+int menuState = 0;
+int isMenuOpen = 0;
+
+int frameCount = 0;
+int totalFrames = 10;
+uint32_t last_frame_time = 0;
+uint32_t ud_frame_time = 0;
+
+uint8_t currAnim = 0;
+
+uint8_t screen_refresh = 1;
+uint8_t input_debounce = 0;
+
+
+/**
+ * @brief  The application entry point.
+ * @retval int
+ */
+int main(void) {
+  // init
+  HAL_Init();
+  // init clk
+  SystemClock_Config();
+  // init peripherals
+  MX_GPIO_Init();
+  MX_SPI1_Init();
+  // init lcd
+  ILI9341_Init(&hspi1);
+  ILI9341_FillScreen(ILI9341_COLOR_WHITE);
+
+  // main loop
+  while (1) {
+    uint32_t now = HAL_GetTick();
+
+    readInputs(Joystick_Read());
+
+    if (screen_refresh) {
+      ILI9341_FillScreen(ILI9341_COLOR_WHITE);
+      screen_refresh = 0;
+    }
+
+    if (isMenuOpen) {
+      drawMenu(menuState);
+    } else {
+      if (now - last_frame_time >= ANIMATION_DELAY) {
+        last_frame_time = now;
+        frameCount += 1;
+      }
+
+      drawSprite();
+    }  
+  }
+}
+
+void readInputs(uint8_t joy) {
+  if (input_debounce > 0) input_debounce--;
+  else {
+    // LR
+    if (joy & JOY_LEFT_MASK) {
+      currAnim -= 1; input_debounce = DEBOUNCE_LEN;
+    } else if (joy & JOY_RIGHT_MASK) {
+      currAnim += 1; input_debounce = DEBOUNCE_LEN;
+    }
+
+    // CLICK
+    if (joy & JOY_CENTER_MASK) {
+      if (isMenuOpen == 0) isMenuOpen = 1;
+      else isMenuOpen = 0;
+      input_debounce = DEBOUNCE_LEN;
+      screen_refresh = 1;
+    }
+
+    // DOWN
+    if (joy & JOY_DOWN_MASK) {
+      menuState++; input_debounce = DEBOUNCE_LEN;
+    }  
+    
+    if (joy & JOY_UP_MASK)  {
+      menuState--; input_debounce = DEBOUNCE_LEN;
+    }
+  }
+}
+
+void drawSprite() {
+    uint8_t animlen = 0;
+    const unsigned short **anim;
+    switch(currAnim) {
+        case 0:
+            anim = eat_anim; animlen = eat_anim_len;
+            break;
+        case 1:
+            anim = die_anim; animlen = die_anim_len;
+            break;
+        case 2:
+            anim = backflip_anim; animlen = backflip_anim_len;
+            break;
+        case 3:
+            anim = lowbatt_anim; animlen = lowbatt_anim_len;
+            break;
+        case 4:
+            anim = idle_anim; animlen = idle_anim_len;
+            break;
+        case 5:
+        default:
+            anim = dead_anim; animlen = dead_anim_len;
+    }
+
+    if (frameCount >= animlen) frameCount = 0;
+
+    ILI9341_DrawImageScaled(SPRITEX, SPRITEY, 20, 26, (const unsigned short *)anim[frameCount],
+           20, 160, 208, 0, 0xFFFF);
+}
 
 static uint8_t Joystick_Read(void) {
   uint8_t state = 0;
@@ -80,319 +216,6 @@ static uint8_t Joystick_Read(void) {
   }
 
   return state;
-}
-
-// 100x100 pixels, all white (16-bit RGB565 format)
-// 100x100 pixel 2-byte (16-bit RGB565) hex code array for an all-white image
-// A 100x100 2D array of all-white pixels using 16-bit (2-byte) hex codes
-// (0xFFFF for RGB565)
-const unsigned short white_image[200][200] = {
-    [0 ... 199] = {[0 ... 199] = 0xFFFF}};
-
-#define SCREEN_WIDTH 240
-#define SCREEN_HEIGHT 320
-
-#define SPRITE_SIZE 50
-#define DST_SIZE 225
-
-#define ANIMATION_DELAY 16
-
-#define ROTATION 10.0f
-
-// int spriteX = (SCREEN_WIDTH / 2) - (SPRITE_SIZE / 2);
-// int spriteY = (SCREEN_HEIGHT / 2) - (SPRITE_SIZE / 2);
-
-int spriteX = (SCREEN_WIDTH - DST_SIZE) / 2;
-int spriteY = (SCREEN_HEIGHT - DST_SIZE) / 2;
-
-int menuState = 0;
-int isMenuOpen = 0;
-
-int frameCount = 0;
-int totalFrames = 20;
-uint32_t last_frame_time = 0;
-uint32_t ud_frame_time = 0;
-int goUp = 0;
-
-void drawMenu() {
-  switch (menuState % 2) {
-    case 0:
-    ILI9341_DrawString(0 , 0, "> FEED <", ILI9341_COLOR_PINK, ILI9341_COLOR_WHITE, 4);
-    ILI9341_DrawString(0 , 7*4 + 5, "  PLAY  ", ILI9341_COLOR_PINK, ILI9341_COLOR_WHITE, 4);
-    break;
-
-    case 1:
-    ILI9341_DrawString(0 , 0, "  FEED  ", ILI9341_COLOR_PINK, ILI9341_COLOR_WHITE, 4);
-    ILI9341_DrawString(0 , 7*4 + 5, "> PLAY <", ILI9341_COLOR_PINK, ILI9341_COLOR_WHITE, 4);
-    
-    break;
-
-    default:
-    break;
-  }
-}
-
-void drawCelebi()  {
-  switch (frameCount) {
-        case 1:
-            ILI9341_DrawImageScaled(spriteX, spriteY, SPRITE_SIZE, SPRITE_SIZE, (const unsigned short *)sprite_animation0,
-                      SPRITE_SIZE, DST_SIZE, DST_SIZE, ROTATION, 0xFFFF);
-            break;
-        case 2:
-            ILI9341_DrawImageScaled(spriteX, spriteY, SPRITE_SIZE, SPRITE_SIZE, (const unsigned short *)sprite_animation1,
-                      SPRITE_SIZE, DST_SIZE, DST_SIZE, ROTATION, 0xFFFF);
-            break;
-        case 3:
-            ILI9341_DrawImageScaled(spriteX, spriteY, SPRITE_SIZE, SPRITE_SIZE, (const unsigned short *)sprite_animation2,
-                      SPRITE_SIZE, DST_SIZE, DST_SIZE, ROTATION, 0xFFFF);
-            break;
-        case 4:
-            ILI9341_DrawImageScaled(spriteX, spriteY, SPRITE_SIZE, SPRITE_SIZE, (const unsigned short *)sprite_animation3,
-                      SPRITE_SIZE, DST_SIZE, DST_SIZE, ROTATION, 0xFFFF);
-            break;
-        case 5:
-            ILI9341_DrawImageScaled(spriteX, spriteY, SPRITE_SIZE, SPRITE_SIZE, (const unsigned short *)sprite_animation4,
-                      SPRITE_SIZE, DST_SIZE, DST_SIZE, ROTATION, 0xFFFF);
-            break;
-        case 6:
-            ILI9341_DrawImageScaled(spriteX, spriteY, SPRITE_SIZE, SPRITE_SIZE, (const unsigned short *)sprite_animation5,
-                      SPRITE_SIZE, DST_SIZE, DST_SIZE, ROTATION, 0xFFFF);
-            break;
-        case 7:
-            ILI9341_DrawImageScaled(spriteX, spriteY, SPRITE_SIZE, SPRITE_SIZE, (const unsigned short *)sprite_animation6,
-                      SPRITE_SIZE, DST_SIZE, DST_SIZE, ROTATION, 0xFFFF);
-            break;
-        case 8:
-            ILI9341_DrawImageScaled(spriteX, spriteY, SPRITE_SIZE, SPRITE_SIZE, (const unsigned short *)sprite_animation7,
-                      SPRITE_SIZE, DST_SIZE, DST_SIZE, ROTATION, 0xFFFF);
-            break;
-        case 9:
-            ILI9341_DrawImageScaled(spriteX, spriteY, SPRITE_SIZE, SPRITE_SIZE, (const unsigned short *)sprite_animation8,
-                      SPRITE_SIZE, DST_SIZE, DST_SIZE, ROTATION, 0xFFFF);
-            break;
-        case 10:
-            ILI9341_DrawImageScaled(spriteX, spriteY, SPRITE_SIZE, SPRITE_SIZE, (const unsigned short *)sprite_animation9,
-                      SPRITE_SIZE, DST_SIZE, DST_SIZE, ROTATION, 0xFFFF);
-            break;
-        case 11:
-            ILI9341_DrawImageScaled(spriteX, spriteY, SPRITE_SIZE, SPRITE_SIZE, (const unsigned short *)sprite_animation10,
-                      SPRITE_SIZE, DST_SIZE, DST_SIZE, ROTATION, 0xFFFF);
-            break;
-        case 12:
-            ILI9341_DrawImageScaled(spriteX, spriteY, SPRITE_SIZE, SPRITE_SIZE, (const unsigned short *)sprite_animation11,
-                      SPRITE_SIZE, DST_SIZE, DST_SIZE, ROTATION, 0xFFFF);
-            break;
-        case 13:
-            ILI9341_DrawImageScaled(spriteX, spriteY, SPRITE_SIZE, SPRITE_SIZE, (const unsigned short *)sprite_animation12,
-                      SPRITE_SIZE, DST_SIZE, DST_SIZE, ROTATION, 0xFFFF);
-            break;
-        case 14:
-            ILI9341_DrawImageScaled(spriteX, spriteY, SPRITE_SIZE, SPRITE_SIZE, (const unsigned short *)sprite_animation13,
-                      SPRITE_SIZE, DST_SIZE, DST_SIZE, ROTATION, 0xFFFF);
-            break;
-        case 15:
-            ILI9341_DrawImageScaled(spriteX, spriteY, SPRITE_SIZE, SPRITE_SIZE, (const unsigned short *)sprite_animation14,
-                      SPRITE_SIZE, DST_SIZE, DST_SIZE, ROTATION, 0xFFFF);
-            break;
-        case 16:
-            ILI9341_DrawImageScaled(spriteX, spriteY, SPRITE_SIZE, SPRITE_SIZE, (const unsigned short *)sprite_animation15,
-                      SPRITE_SIZE, DST_SIZE, DST_SIZE, ROTATION, 0xFFFF);
-            break;
-        case 17:
-            ILI9341_DrawImageScaled(spriteX, spriteY, SPRITE_SIZE, SPRITE_SIZE, (const unsigned short *)sprite_animation16,
-                      SPRITE_SIZE, DST_SIZE, DST_SIZE, ROTATION, 0xFFFF);
-            break;
-        case 18:
-            ILI9341_DrawImageScaled(spriteX, spriteY, SPRITE_SIZE, SPRITE_SIZE, (const unsigned short *)sprite_animation17,
-                      SPRITE_SIZE, DST_SIZE, DST_SIZE, ROTATION, 0xFFFF);
-            break;
-        case 19:
-            ILI9341_DrawImageScaled(spriteX, spriteY, SPRITE_SIZE, SPRITE_SIZE, (const unsigned short *)sprite_animation18,
-                      SPRITE_SIZE, DST_SIZE, DST_SIZE, ROTATION, 0xFFFF);
-            break;
-        case 20:
-            ILI9341_DrawImageScaled(spriteX, spriteY, SPRITE_SIZE, SPRITE_SIZE, (const unsigned short *)sprite_animation19,
-                      SPRITE_SIZE, DST_SIZE, DST_SIZE, ROTATION, 0xFFFF);
-            break;
-        default:
-            ILI9341_DrawImageScaled(spriteX, spriteY, SPRITE_SIZE, SPRITE_SIZE, (const unsigned short *)sprite_animation20,
-                      SPRITE_SIZE, DST_SIZE, DST_SIZE, ROTATION, 0xFFFF);
-            break;
-    }
-}
-/**
- * @brief  The application entry point.
- * @retval int
- */
-int main(void) {
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick.
-   */
-  HAL_Init();
-
-  /* Configure the system clock */
-  SystemClock_Config();
-
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_SPI1_Init();
-
-  /* Initialize the LCD and show a splash screen */
-  ILI9341_Init(&hspi1);
-
-  ILI9341_FillScreen(ILI9341_COLOR_WHITE);
-
-  /* Infinite loop: cycle through the demo pages */
-  while (1) {
-    uint32_t now = HAL_GetTick(); // or system tick
-
-    uint8_t joy = Joystick_Read();
-
-    // if (joy & JOY_LEFT_MASK) {
-    //   spriteX = spriteX - 1;
-    //   // now = HAL_GetTick();
-    // }  
-    // if (joy & JOY_RIGHT_MASK) {
-    //   spriteX = spriteX + 1;
-    // }  
-
-    if (joy & JOY_CENTER_MASK) {
-      if (isMenuOpen == 0) {
-        isMenuOpen = 1;
-      }
-      else {
-        isMenuOpen = 0;
-      }
-      // spriteX = 0;
-      // spriteY = 0;
-    }
-
-    if (joy & JOY_DOWN_MASK) {
-      // spriteY = spriteY + 1;
-      menuState++;
-    }  
-    
-    if (joy & JOY_UP_MASK)  {
-      // spriteY = spriteY - 1;
-      menuState--;
-    }  
-
-    if (isMenuOpen == 0) {
-      ILI9341_FillScreen(ILI9341_COLOR_WHITE);
-    }
-    else {
-      drawMenu();
-    }
-    
-    // if (now - last_frame_time >= ANIMATION_DELAY) {
-    //     last_frame_time = now;
-
-    //     frameCount += 1;
-
-    //     if (frameCount >= totalFrames) {
-    //         frameCount = 0;
-    //     }
-
-    //     if (goUp == 0) {
-    //       spriteY = spriteY - 1;
-
-    //       if (spriteY < 30) {
-    //         goUp = 1;
-    //       }
-    //     }
-    //     else if (goUp == 1) {
-    //       spriteY = spriteY + 1;
-
-    //       if (spriteY > 50) {
-    //         goUp = 0;
-    //       }
-    //     }
-    // }
-
-    // drawCelebi();    
-  }
-}
-
-/**
- * @brief  Fills the screen with a set of vertical color bars.
- */
-static void Demo_ColorBars(void) {
-  static const uint16_t colors[] = {
-      ILI9341_COLOR_WHITE, ILI9341_COLOR_YELLOW,  ILI9341_COLOR_CYAN,
-      ILI9341_COLOR_GREEN, ILI9341_COLOR_MAGENTA, ILI9341_COLOR_RED,
-      ILI9341_COLOR_BLUE,  ILI9341_COLOR_ORANGE};
-  const uint16_t bar_count = sizeof(colors) / sizeof(colors[0]);
-  const uint16_t bar_width = ILI9341_WIDTH / bar_count;
-  uint16_t i;
-
-  for (i = 0; i < bar_count; i++) {
-    ILI9341_FillRect((uint16_t)(i * bar_width), 0, bar_width, ILI9341_HEIGHT,
-                     colors[i]);
-  }
-}
-
-/**
- * @brief  Draws a handful of filled and outlined shapes.
- */
-static void Demo_Shapes(void) {
-  ILI9341_FillScreen(ILI9341_COLOR_BLACK);
-
-  ILI9341_FillRect(20, 20, 80, 60, ILI9341_COLOR_RED);
-  ILI9341_DrawRect(120, 20, 80, 60, ILI9341_COLOR_GREEN);
-
-  ILI9341_DrawLine(20, 110, 220, 110, ILI9341_COLOR_WHITE);
-  ILI9341_DrawLine(20, 110, 220, 260, ILI9341_COLOR_YELLOW);
-  ILI9341_DrawLine(220, 110, 20, 260, ILI9341_COLOR_CYAN);
-
-  ILI9341_FillRect(70, 220, 100, 40, ILI9341_COLOR_BLUE);
-  ILI9341_DrawRect(65, 215, 110, 50, ILI9341_COLOR_WHITE);
-}
-
-/**
- * @brief  Demonstrates text rendering at a few different sizes.
- */
-static void Demo_Text(void) {
-  ILI9341_FillScreen(ILI9341_COLOR_BLACK);
-
-  ILI9341_DrawString(10, 20, "HELLO CLASS!", ILI9341_COLOR_WHITE,
-                     ILI9341_COLOR_BLACK, 3);
-  ILI9341_DrawString(10, 60, "ILI9341 QVGA TFT", ILI9341_COLOR_GREEN,
-                     ILI9341_COLOR_BLACK, 2);
-  ILI9341_DrawString(10, 90, "DRIVEN OVER SPI1", ILI9341_COLOR_GREEN,
-                     ILI9341_COLOR_BLACK, 2);
-  ILI9341_DrawString(10, 130, "TRY CHANGING THE", ILI9341_COLOR_YELLOW,
-                     ILI9341_COLOR_BLACK, 1);
-  ILI9341_DrawString(10, 145, "COLORS AND TEXT IN", ILI9341_COLOR_YELLOW,
-                     ILI9341_COLOR_BLACK, 1);
-  ILI9341_DrawString(10, 160, "DEMO TEXT() IN MAIN.C", ILI9341_COLOR_YELLOW,
-                     ILI9341_COLOR_BLACK, 1);
-}
-
-/**
- * @brief  Live joystick (B1) status readout for a few seconds.
- */
-static void Demo_Joystick(void) {
-  uint32_t start = HAL_GetTick();
-  char line[] = "L:_ C:_ D:_ R:_ U:_";
-
-  ILI9341_FillScreen(ILI9341_COLOR_BLACK);
-  ILI9341_DrawString(10, 10, "JOYSTICK TEST", ILI9341_COLOR_WHITE,
-                     ILI9341_COLOR_BLACK, 2);
-  ILI9341_DrawString(10, 40, "MOVE THE STICK (B1)", ILI9341_COLOR_YELLOW,
-                     ILI9341_COLOR_BLACK, 1);
-
-  while ((HAL_GetTick() - start) < 5000U) {
-    uint8_t joy = Joystick_Read();
-
-    line[2] = (joy & JOY_LEFT_MASK) ? '1' : '0';
-    line[6] = (joy & JOY_CENTER_MASK) ? '1' : '0';
-    line[10] = (joy & JOY_DOWN_MASK) ? '1' : '0';
-    line[14] = (joy & JOY_RIGHT_MASK) ? '1' : '0';
-    line[18] = (joy & JOY_UP_MASK) ? '1' : '0';
-
-    ILI9341_DrawString(10, 70, line, ILI9341_COLOR_GREEN, ILI9341_COLOR_BLACK,
-                       2);
-    HAL_Delay(50);
-  }
 }
 
 /**
