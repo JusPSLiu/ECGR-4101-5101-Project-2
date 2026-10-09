@@ -205,19 +205,26 @@ void drawSprite() {
            41, 40, 40, 0, 0xFFFF);
     
     ILI9341_DrawRect(49, 20, 184, 12, ILI9341_COLOR_BLACK);
+
+    // TODO: move to global
     uint8_t battery_percent = 100; // max 182
     uint8_t happy_percent = 120; // max 182
 
+    // display status bars
     battery_percent = clamp(battery_percent, 0, 182);
     happy_percent = clamp(happy_percent, 0, 182);
 
+    short batcolor[] = {0b0111111111101111, ILI9341_COLOR_GREEN, 0b0000001111100000};
     for (int y=21;y<31;y++) {
-      ILI9341_DrawHLine(50, y, battery_percent, ILI9341_COLOR_GREEN);
+      uint8_t color_idx = ((y-4)/5) - 3;
+      ILI9341_DrawHLine(50, y, battery_percent, batcolor[color_idx]);
       ILI9341_DrawHLine(50+battery_percent, y, 182-battery_percent, ILI9341_COLOR_BLACK);
     }
     ILI9341_DrawRect(49, 288, 184, 12, ILI9341_COLOR_BLACK);
+    short barcolor[] = {0b1111101111101111, ILI9341_COLOR_RED, 0b0111100000000000};
     for (int y=289;y<299;y++) {
-      ILI9341_DrawHLine(50, y, happy_percent, ILI9341_COLOR_RED);
+      uint8_t color_idx = ((y-1)/5) - 57;
+      ILI9341_DrawHLine(50, y, happy_percent, barcolor[color_idx]);
       ILI9341_DrawHLine(50+happy_percent, y, 182-happy_percent, ILI9341_COLOR_BLACK);
     }
 }
