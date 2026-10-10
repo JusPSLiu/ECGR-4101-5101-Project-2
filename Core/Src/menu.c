@@ -30,3 +30,12 @@ void drawMenu(uint8_t menuState) {
     y_pos += 33;
   }
 }
+
+void performAction(uint8_t menuState) {
+  switch(menuState) {
+    case 0: feed(); break;
+    case 1: play(); break;
+    case 2: break;
+    case 3: break;
+  }
+}

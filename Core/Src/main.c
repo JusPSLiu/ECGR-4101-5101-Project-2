@@ -35,8 +35,9 @@
 #include "gfx01m2_conf.h"
 #include "ili9341.h"
 #include <stdio.h>
-#include "sprite.h"
 #include "menu.h"
+//#include "sprite.h"
+//#include "character.h"
 
 
 /* Private variables ---------------------------------------------------------*/
@@ -50,8 +51,10 @@ static void MX_SPI1_Init(void);
 static uint8_t Joystick_Read(void);
 
 /* DRAWING STUFF TO THE SCREEN */
-void drawSprite();
 void readInputs(uint8_t);
+void drawHudBackground();
+void drawMenuBackground();
+void updateHud();
 /* utils */
 uint8_t clamp(uint8_t, uint8_t, uint8_t);
 
@@ -95,7 +98,6 @@ uint8_t currAnim = 0;
 uint8_t screen_refresh = 1;
 uint8_t input_debounce = 0;
 
-
 /**
  * @brief  The application entry point.
  * @retval int
@@ -119,7 +121,8 @@ int main(void) {
     readInputs(Joystick_Read());
 
     if (screen_refresh) {
-      ILI9341_FillScreen(ILI9341_COLOR_WHITE);
+      if (isMenuOpen) drawMenuBackground();
+      else drawHudBackground();
       screen_refresh = 0;
     }
 
@@ -129,10 +132,14 @@ int main(void) {
       if (now - last_frame_time >= ANIMATION_DELAY) {
         last_frame_time = now;
         frameCount += 1;
+
+        updateBattery();
+        updateHappy();
       }
 
-      drawSprite();
-    }  
+      updateHud();
+      //drawSprite();
+    }
   }
 }
 
@@ -150,83 +157,62 @@ void readInputs(uint8_t joy) {
     if (joy & JOY_CENTER_MASK) {
       if (isMenuOpen == 0) isMenuOpen = 1;
       else isMenuOpen = 0;
+
+      performAction(menuState);
+
       input_debounce = DEBOUNCE_LEN;
       screen_refresh = 1;
     }
 
     // DOWN
     if (joy & JOY_DOWN_MASK) {
-      menuState++; input_debounce = DEBOUNCE_LEN;
+      if (isMenuOpen) {
+        menuState++; input_debounce = DEBOUNCE_LEN;
+      }
     }  
     
     if (joy & JOY_UP_MASK)  {
-      menuState--; input_debounce = DEBOUNCE_LEN;
+      if (isMenuOpen) {
+        menuState--; input_debounce = DEBOUNCE_LEN;
+      }
     }
   }
 }
 
-void drawSprite() {
-    uint8_t animlen = 0;
-    const unsigned short **anim;
-    switch(currAnim) {
-        case 0:
-            anim = eat_anim; animlen = eat_anim_len;
-            break;
-        case 1:
-            anim = die_anim; animlen = die_anim_len;
-            break;
-        case 2:
-            anim = backflip_anim; animlen = backflip_anim_len;
-            break;
-        case 3:
-            anim = lowbatt_anim; animlen = lowbatt_anim_len;
-            break;
-        case 4:
-            anim = idle_anim; animlen = idle_anim_len;
-            break;
-        case 5:
-            anim = sad_anim; animlen = sad_anim_len;
-            break;
-        case 6:
-            anim = dead_anim; animlen = dead_anim_len;
-            break;
-        default:
-            anim = floss_anim; animlen = floss_anim_len;
-    }
+void drawHudBackground() {
+  ILI9341_FillScreen(ILI9341_COLOR_WHITE);
+  ILI9341_DrawImageScaled(4, 6, 40, 40, (const unsigned short *)battery,
+          41, 40, 40, 0, 0xFFFF);
+  ILI9341_DrawImageScaled(4, 274, 40, 40, (const unsigned short *)heart,
+          41, 40, 40, 0, 0xFFFF);
+}
+void drawMenuBackground() {
+  ILI9341_FillScreen(ILI9341_COLOR_WHITE);
+  ILI9341_DrawImageScaled(4, 6, 40, 40, (const unsigned short *)battery,
+          41, 40, 40, 0, 0xFFFF);
+  ILI9341_DrawImageScaled(4, 274, 40, 40, (const unsigned short *)heart,
+          41, 40, 40, 0, 0xFFFF);
+}
+          
+void updateHud() {
+  uint8_t batt = clamp((battery_percent * 182 / 100), 0, 182);
+  uint8_t happ = clamp((happy_percent * 182 / 100), 0, 182);
 
-    if (frameCount >= animlen) frameCount = 0;
-
-    ILI9341_DrawImageScaled(SPRITEX, SPRITEY, 20, 26, (const unsigned short *)anim[frameCount],
-           20, 160, 208, 0, 0xFFFF);
-
-    ILI9341_DrawImageScaled(4, 6, 40, 40, (const unsigned short *)battery,
-           41, 40, 40, 0, 0xFFFF);
-    ILI9341_DrawImageScaled(4, 274, 40, 40, (const unsigned short *)heart,
-           41, 40, 40, 0, 0xFFFF);
-    
-    ILI9341_DrawRect(49, 20, 184, 12, ILI9341_COLOR_BLACK);
-
-    // TODO: move to global
-    uint8_t battery_percent = 100; // max 182
-    uint8_t happy_percent = 120; // max 182
-
-    // display status bars
-    battery_percent = clamp(battery_percent, 0, 182);
-    happy_percent = clamp(happy_percent, 0, 182);
-
-    short batcolor[] = {0b0111111111101111, ILI9341_COLOR_GREEN, 0b0000001111100000};
-    for (int y=21;y<31;y++) {
-      uint8_t color_idx = ((y-4)/5) - 3;
-      ILI9341_DrawHLine(50, y, battery_percent, batcolor[color_idx]);
-      ILI9341_DrawHLine(50+battery_percent, y, 182-battery_percent, ILI9341_COLOR_BLACK);
-    }
-    ILI9341_DrawRect(49, 288, 184, 12, ILI9341_COLOR_BLACK);
-    short barcolor[] = {0b1111101111101111, ILI9341_COLOR_RED, 0b0111100000000000};
-    for (int y=289;y<299;y++) {
-      uint8_t color_idx = ((y-1)/5) - 57;
-      ILI9341_DrawHLine(50, y, happy_percent, barcolor[color_idx]);
-      ILI9341_DrawHLine(50+happy_percent, y, 182-happy_percent, ILI9341_COLOR_BLACK);
-    }
+  // display status bars
+  ILI9341_DrawRect(49, 20, 184, 12, ILI9341_COLOR_BLACK);
+  short batcolor[] = {0b0111111111101111, ILI9341_COLOR_GREEN, 0b0000001111100000};
+  for (int y=21;y<31;y++) {
+    uint8_t color_idx = ((y-4)/5) - 3;
+    ILI9341_DrawHLine(50, y, batt, batcolor[color_idx]);
+    ILI9341_DrawHLine(50+batt, y, 182-batt, ILI9341_COLOR_BLACK);
+  }
+  ILI9341_DrawRect(49, 288, 184, 12, ILI9341_COLOR_BLACK);
+  short barcolor[] = {0b1111101111101111, ILI9341_COLOR_RED, 0b0111100000000000};
+  for (int y=289;y<299;y++) {
+    uint8_t color_idx = ((y-1)/5) - 57;
+    ILI9341_DrawHLine(50, y, happ, barcolor[color_idx]);
+    ILI9341_DrawHLine(50+happ, y, 182-happ, ILI9341_COLOR_BLACK);
+  }
 }
 
 inline uint8_t clamp(uint8_t val, uint8_t min, uint8_t max) {
