@@ -36,9 +36,7 @@
 #include "ili9341.h"
 #include <stdio.h>
 #include "menu.h"
-//#include "sprite.h"
-//#include "character.h"
-
+#include "character.h"
 
 /* Private variables ---------------------------------------------------------*/
 SPI_HandleTypeDef hspi1;
@@ -50,11 +48,10 @@ static void MX_SPI1_Init(void);
 
 static uint8_t Joystick_Read(void);
 
-/* DRAWING STUFF TO THE SCREEN */
+/* UTILITIES */
 void readInputs(uint8_t);
-void drawHudBackground();
-void drawMenuBackground();
-void updateHud();
+void performAction();
+
 /* utils */
 uint8_t clamp(uint8_t, uint8_t, uint8_t);
 
@@ -82,18 +79,14 @@ const unsigned short white_image[200][200] = {
 #define SPRITEX 40
 #define SPRITEY 56
 
-#define DEBOUNCE_LEN 1
+#define DEBOUNCE_LEN 5
 
 
 int menuState = 0;
+uint8_t menuStateChanged = 0;
 int isMenuOpen = 0;
 
-int frameCount = 0;
-int totalFrames = 10;
 uint32_t last_frame_time = 0;
-uint32_t ud_frame_time = 0;
-
-uint8_t currAnim = 0;
 
 uint8_t screen_refresh = 1;
 uint8_t input_debounce = 0;
@@ -121,24 +114,28 @@ int main(void) {
     readInputs(Joystick_Read());
 
     if (screen_refresh) {
-      if (isMenuOpen) drawMenuBackground();
+      if (isMenuOpen) {drawMenuBackground(); drawMenu(menuState); }
       else drawHudBackground();
       screen_refresh = 0;
     }
 
     if (isMenuOpen) {
-      drawMenu(menuState);
+      // only redraw if change
+      if (menuStateChanged) {
+        menuState = drawMenu(menuState);
+        menuStateChanged = 0;
+      }
     } else {
       if (now - last_frame_time >= ANIMATION_DELAY) {
         last_frame_time = now;
-        frameCount += 1;
+        incrementFrameCount();
 
         updateBattery();
         updateHappy();
       }
 
       updateHud();
-      //drawSprite();
+      characterLogic();
     }
   }
 }
@@ -148,9 +145,9 @@ void readInputs(uint8_t joy) {
   else {
     // LR
     if (joy & JOY_LEFT_MASK) {
-      currAnim -= 1; input_debounce = DEBOUNCE_LEN;
+      input_debounce = DEBOUNCE_LEN;
     } else if (joy & JOY_RIGHT_MASK) {
-      currAnim += 1; input_debounce = DEBOUNCE_LEN;
+      input_debounce = DEBOUNCE_LEN;
     }
 
     // CLICK
@@ -167,58 +164,27 @@ void readInputs(uint8_t joy) {
     // DOWN
     if (joy & JOY_DOWN_MASK) {
       if (isMenuOpen) {
-        menuState++; input_debounce = DEBOUNCE_LEN;
+        menuState++; menuStateChanged = 1;
       }
+      input_debounce = DEBOUNCE_LEN;
     }  
     
     if (joy & JOY_UP_MASK)  {
       if (isMenuOpen) {
-        menuState--; input_debounce = DEBOUNCE_LEN;
+        menuState--; menuStateChanged = 1;
       }
+      input_debounce = DEBOUNCE_LEN;
     }
   }
 }
 
-void drawHudBackground() {
-  ILI9341_FillScreen(ILI9341_COLOR_WHITE);
-  ILI9341_DrawImageScaled(4, 6, 40, 40, (const unsigned short *)battery,
-          41, 40, 40, 0, 0xFFFF);
-  ILI9341_DrawImageScaled(4, 274, 40, 40, (const unsigned short *)heart,
-          41, 40, 40, 0, 0xFFFF);
-}
-void drawMenuBackground() {
-  ILI9341_FillScreen(ILI9341_COLOR_WHITE);
-  ILI9341_DrawImageScaled(4, 6, 40, 40, (const unsigned short *)battery,
-          41, 40, 40, 0, 0xFFFF);
-  ILI9341_DrawImageScaled(4, 274, 40, 40, (const unsigned short *)heart,
-          41, 40, 40, 0, 0xFFFF);
-}
-          
-void updateHud() {
-  uint8_t batt = clamp((battery_percent * 182 / 100), 0, 182);
-  uint8_t happ = clamp((happy_percent * 182 / 100), 0, 182);
-
-  // display status bars
-  ILI9341_DrawRect(49, 20, 184, 12, ILI9341_COLOR_BLACK);
-  short batcolor[] = {0b0111111111101111, ILI9341_COLOR_GREEN, 0b0000001111100000};
-  for (int y=21;y<31;y++) {
-    uint8_t color_idx = ((y-4)/5) - 3;
-    ILI9341_DrawHLine(50, y, batt, batcolor[color_idx]);
-    ILI9341_DrawHLine(50+batt, y, 182-batt, ILI9341_COLOR_BLACK);
+void performAction() {
+  switch(menuState) {
+    case 0: feed(); break;
+    case 1: play(); break;
+    case 2: break;
+    case 3: break;
   }
-  ILI9341_DrawRect(49, 288, 184, 12, ILI9341_COLOR_BLACK);
-  short barcolor[] = {0b1111101111101111, ILI9341_COLOR_RED, 0b0111100000000000};
-  for (int y=289;y<299;y++) {
-    uint8_t color_idx = ((y-1)/5) - 57;
-    ILI9341_DrawHLine(50, y, happ, barcolor[color_idx]);
-    ILI9341_DrawHLine(50+happ, y, 182-happ, ILI9341_COLOR_BLACK);
-  }
-}
-
-inline uint8_t clamp(uint8_t val, uint8_t min, uint8_t max) {
-  if (val < min) return min;
-  if (val > max) return max;
-  return val;
 }
 
 static uint8_t Joystick_Read(void) {

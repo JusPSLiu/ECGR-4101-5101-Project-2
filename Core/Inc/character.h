@@ -2,11 +2,7 @@
 #define CHARACTER_H
 
 #include "ili9341.h"
-#include "sprite.h"
-
-uint8_t battery_percent = 100;
-uint8_t happy_percent = 100;
-uint8_t is_dead = 0;
+#include "graphics_controller.h"
 
 // ACTIONS
 void feed();
@@ -19,5 +15,9 @@ void updateBattery();
 // INTERNAL LOGIC
 void characterLogic();
 void updateAnimState();
+uint8_t clamp(uint8_t, uint8_t, uint8_t);
+
+void updateHud();
+
 
 #endif

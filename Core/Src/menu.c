@@ -1,6 +1,6 @@
 #include "menu.h"
 
-void drawMenu(uint8_t menuState) {
+uint8_t drawMenu(uint8_t menuState) {
   char *menuoptions[] = {
     "  FEED  ",
     "  PLAY  ",
@@ -29,13 +29,6 @@ void drawMenu(uint8_t menuState) {
     ILI9341_DrawString(0 , y_pos, curr_str, color, ILI9341_COLOR_WHITE, 4);
     y_pos += 33;
   }
-}
 
-void performAction(uint8_t menuState) {
-  switch(menuState) {
-    case 0: feed(); break;
-    case 1: play(); break;
-    case 2: break;
-    case 3: break;
-  }
+  return menuState;
 }

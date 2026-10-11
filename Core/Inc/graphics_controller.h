@@ -1,0 +1,33 @@
+#ifndef GRAPHICS_H
+#define GRAPHICS_H
+
+#include "ili9341.h"
+
+enum anims {
+    anim_idle_loop,
+    anim_sad_loop,
+    anim_lowbatt_loop,
+    anim_dead_loop,
+    anim_eat,
+    anim_backflip,
+    anim_dance,
+    anim_die
+};
+
+// MUTATORS
+void incrementFrameCount();
+void triggerAnim(enum anims);
+void setLoop(enum anims);
+
+// MENU BACKGROUND
+void drawMenuBackground();
+
+// SPRITE GRAPHICS
+void drawSprite();
+void drawHudBackground();
+void updateHudDisplay(uint8_t, uint8_t);
+
+
+uint8_t clamp(uint8_t, uint8_t, uint8_t);
+
+#endif
