@@ -60,6 +60,8 @@ restart_draw:
 
     ILI9341_DrawImageScaled(SPRITEX, SPRITEY, 20, 26, (const unsigned short *)anim[frame_count],
         20, 160, 208, 0, 0xFFFF);
+    //ILI9341_DrawImageScaledFast(SPRITEX, SPRITEY, 20, 26, (const unsigned short *)anim[frame_count],
+    //    8);
 }
 
 void triggerAnim(enum anims newanim) {
@@ -86,10 +88,10 @@ void drawMenuBackground() {
 }
 void drawHudBackground() {
   ILI9341_FillScreen(ILI9341_COLOR_WHITE);
-  ILI9341_DrawImageScaled(4, 6, 40, 40, (const unsigned short *)battery,
-          41, 40, 40, 0, 0xFFFF);
-  ILI9341_DrawImageScaled(4, 274, 40, 40, (const unsigned short *)heart,
-          41, 40, 40, 0, 0xFFFF);
+  ILI9341_DrawImageScaledFast(4, 6, 41, 40, (const unsigned short *)battery,
+          1);
+  ILI9341_DrawImageScaledFast(4, 274, 41, 40, (const unsigned short *)heart,
+          1);
 }
 void updateHudDisplay(uint8_t battery_percent, uint8_t happy_percent) {
   uint8_t batt = clamp((battery_percent * 182 / 100), 0, 182);

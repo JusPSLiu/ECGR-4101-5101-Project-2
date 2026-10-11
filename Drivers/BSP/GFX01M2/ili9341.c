@@ -408,6 +408,41 @@ void ILI9341_DrawImageScaled(uint16_t x, uint16_t y, uint16_t src_w, uint16_t sr
     LCD_CS_High();
 }
 
+void ILI9341_DrawImageScaledFast(uint16_t x, uint16_t y, uint16_t src_w, uint16_t src_h,
+                              const unsigned short *img, uint16_t scale)
+{
+    static uint8_t row_buf[ILI9341_WIDTH * 2];
+    uint16_t row, col;
+    uint16_t w = src_w * scale, h = src_h * scale;
+
+    if ((x >= ILI9341_WIDTH) || (y >= ILI9341_HEIGHT))
+    {
+        return;
+    }
+    if ((uint32_t)(x + w) > ILI9341_WIDTH)  { w = ILI9341_WIDTH - x; }
+    if ((uint32_t)(y + h) > ILI9341_HEIGHT) { h = ILI9341_HEIGHT - y; }
+
+    LCD_SetAddressWindow(x, y, x + w - 1, y + h - 1);
+
+    HAL_GPIO_WritePin(LCD_DC_GPIO_Port, LCD_DC_Pin, GPIO_PIN_SET);
+    LCD_CS_Low();
+    for (row = 0; row < h; row++)
+    {
+        for (col = 0; col < w; col++)
+        {
+            uint16_t src_y = (row) / scale;
+            uint16_t src_x = (col) / scale;
+            
+            uint16_t color = img[(uint32_t)src_y * src_w + (uint32_t)src_x];
+
+            row_buf[2 * col]     = (uint8_t)(color >> 8);
+            row_buf[2 * col + 1] = (uint8_t)(color & 0xFF);
+        }
+        HAL_SPI_Transmit(ili9341_hspi, row_buf, (uint16_t)(w * 2), HAL_MAX_DELAY);
+    }
+    LCD_CS_High();
+}
+
 
 void DrawyDrawy(uint16_t x, uint16_t y, uint16_t src_w, uint16_t src_h,
                               const unsigned short *img, uint16_t src_stride,

@@ -72,12 +72,7 @@ const unsigned short white_image[200][200] = {
 #define SCREEN_WIDTH 240
 #define SCREEN_HEIGHT 320
 
-#define SPRITE_SIZE 20
-#define DST_SIZE 160
-#define ANIMATION_DELAY 120
-#define ROTATION 0.0f
-#define SPRITEX 40
-#define SPRITEY 56
+#define ANIMATION_DELAY 130
 
 #define DEBOUNCE_LEN 5
 
@@ -153,9 +148,10 @@ void readInputs(uint8_t joy) {
     // CLICK
     if (joy & JOY_CENTER_MASK) {
       if (isMenuOpen == 0) isMenuOpen = 1;
-      else isMenuOpen = 0;
-
-      performAction(menuState);
+      else {
+        isMenuOpen = 0;
+        performAction(menuState);
+      }
 
       input_debounce = DEBOUNCE_LEN;
       screen_refresh = 1;
