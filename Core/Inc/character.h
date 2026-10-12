@@ -7,6 +7,7 @@
 // ACTIONS
 void feed();
 void play();
+void dance();
 
 // MUTATORS
 void updateHappy();

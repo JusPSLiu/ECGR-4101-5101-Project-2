@@ -8,6 +8,7 @@ uint8_t is_dead;
 
 uint8_t happ_update_counter = UPDATE_COOLDOWN;
 uint8_t batt_update_counter = UPDATE_COOLDOWN;
+static uint8_t is_dancing;
 
 enum states {
     state_idle
@@ -42,14 +43,22 @@ void updateBattery() {
 }
 
 void feed() {
+    is_dancing = 0;
     battery_percent = 100;
     updateAnimState();
     triggerAnim(anim_eat);
 }
 void play() {
+    is_dancing = 0;
     happy_percent = 100;
     updateAnimState();
     triggerAnim(anim_backflip);
+}
+void dance() {
+    if (is_dead) return;
+
+    is_dancing = 1;
+    setLoop(anim_dance);
 }
 
 // im hardcoding this hierarchy of priority for the underlying loop animation.
@@ -62,7 +71,10 @@ void updateAnimState() {
     }
 
     if (is_dead) {
+        is_dancing = 0;
         setLoop(anim_dead_loop);
+    } else if (is_dancing) {
+        setLoop(anim_dance);
     } else if (battery_percent < 25) {
         setLoop(anim_lowbatt_loop);
     } else if (happy_percent < 50) {
