@@ -1,8 +1,6 @@
 #include "character.h"
 #include "pet_stats.h"   /* hunger/happiness values, decay timer, clamping */
 
-uint8_t is_dead;
-
 /* Last values seen by updateStats() -so the animation state is only
    re-checked when a stat actually changes (not on every loop pass). */
 static uint8_t last_hunger    = STAT_MAX + 1;   /* impossible value forces the first check */
@@ -24,9 +22,7 @@ void characterLogic() {
  *         when a value changes so the right loop animation plays
  */
 void updateStats(uint32_t now) {
-    if (is_dead) return;                       /* stats freeze once the pet is dead */
-
-    PetStats_Update(now);                      /* time-based decay + clamping */
+    PetStats_Update(now);                      /* time-based decay + clamping (frozen once not alive) */
 
     uint8_t hunger    = PetStats_GetHunger();
     uint8_t happiness = PetStats_GetHappiness();
@@ -39,28 +35,25 @@ void updateStats(uint32_t now) {
 }
 
 void feed() {
+    if (pet.state != PET_ALIVE) return;        /* a dead / runaway pet can't eat */
     PetStats_Feed();                           /* hunger += FEED_AMOUNT, clamped */
     updateAnimState();
     triggerAnim(anim_eat);
 }
 void play() {
+    if (pet.state != PET_ALIVE) return;        /* a dead / runaway pet can't play */
     PetStats_Play();                           /* happiness += PLAY_AMOUNT, clamped */
     updateAnimState();
     triggerAnim(anim_backflip);
 }
 
-// im hardcoding this hierarchy of priority for the underlying loop animation.
-// this is a small enough project.
+//  hardcoding this hierarchy of priority for the underlying loop animation
 void updateAnimState() {
-    if (PetStats_IsStarving() || PetStats_IsMiserable()) {
-        is_dead = 1;
-        PetStats_AddHunger(-(int16_t)STAT_MAX);     /* drop both meters to 0 on death */
-        PetStats_AddHappiness(-(int16_t)STAT_MAX);
-        triggerAnim(anim_die);
-    }
-
-    if (is_dead) {
+    /* pet.state is set by the consequence polling in main.c */
+    if (pet.state == PET_DEAD) {
         setLoop(anim_dead_loop);
+    } else if (pet.state == PET_RAN_AWAY) {
+        setLoop(anim_sad_loop);                /* placeholder until the runaway screen is made */
     } else if (PetStats_GetHunger() < 25) {
         setLoop(anim_lowbatt_loop);
     } else if (PetStats_GetHappiness() < 50) {
@@ -72,5 +65,5 @@ void updateAnimState() {
 
 void updateHud() {
     updateHudDisplay(PetStats_GetHunger(), PetStats_GetHappiness());
-        PetStats_DrawAlerts(HAL_GetTick(), !is_dead);   /* blink low-stat alerts - hidden once dead */
+        PetStats_DrawAlerts(HAL_GetTick(), pet.state == PET_ALIVE);   /* blink low-stat alerts - hidden once dead */
 }

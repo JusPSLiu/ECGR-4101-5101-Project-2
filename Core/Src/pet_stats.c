@@ -105,15 +105,19 @@ void PetStats_Update(uint32_t now_ms) {
     return;
   }
 
-  /* unsigned subtraction handles HAL_GetTick() wrapping after ~49 days. */
-  if (now_ms - last_hunger_tick >= HUNGER_DECAY_MS) {
-    last_hunger_tick += HUNGER_DECAY_MS;   /* step forward by one period, keeps timing exact */
-    pet.hunger = clamp_stat((int16_t)pet.hunger - (int16_t)HUNGER_DECAY_AMOUNT);
-  }
+    /* stats only drain while the pet is alive; dead / ran away freezes them
+     (the autosave below still runs, so the new state gets saved to flash) */
+  if (pet.state == PET_ALIVE) {
+    /* unsigned subtraction handles HAL_GetTick() wrapping after ~49 days */
+    if (now_ms - last_hunger_tick >= HUNGER_DECAY_MS) {
+      last_hunger_tick += HUNGER_DECAY_MS;   /* step forward by one period, keeps timing exact */
+      pet.hunger = clamp_stat((int16_t)pet.hunger - (int16_t)HUNGER_DECAY_AMOUNT);
+    }
 
-  if (now_ms - last_happy_tick >= HAPPY_DECAY_MS) {
-    last_happy_tick += HAPPY_DECAY_MS;
-    pet.happiness = clamp_stat((int16_t)pet.happiness - (int16_t)HAPPY_DECAY_AMOUNT);
+    if (now_ms - last_happy_tick >= HAPPY_DECAY_MS) {
+      last_happy_tick += HAPPY_DECAY_MS;
+      pet.happiness = clamp_stat((int16_t)pet.happiness - (int16_t)HAPPY_DECAY_AMOUNT);
+    }
   }
 
   /* autosave to flash every SAVE_INTERVAL_MS (only writes if something changed) */
