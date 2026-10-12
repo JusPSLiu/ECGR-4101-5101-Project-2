@@ -9,10 +9,13 @@
 #include "pet_stats.h"
 #include "ili9341.h"     /* ILI9341_FillRect, ILI9341_DrawRect, ILI9341_DrawString */
 #include <stdio.h>       /* snprintf for the number labels                        */
+#include "pet_flash.h"   /* PetFlash_Load / PetFlash_Save (non-volatile storage)  */
+
+/* The pet's stats: one global struct (declared extern in pet_stats.h) so the
+   whole thing can be saved to / loaded from flash in one piece. */
+PetStats_t pet = { STAT_START, STAT_START, PET_ALIVE };
 
 /* Private state (only this file can touch these) */
-static uint8_t  hunger    = STAT_START;   /* 0 = starving, 100 = full            */
-static uint8_t  happiness = STAT_START;   /* 0 = miserable, 100 = very happy     */
 
 static uint32_t last_hunger_tick = 0;     /* time (ms) of the last hunger drop   */
 static uint32_t last_happy_tick  = 0;     /* time (ms) of the last happy drop    */
@@ -26,9 +29,9 @@ static uint8_t  timers_started   = 0;     /* 0 until the first Update() call    
 #define LABEL_W        48U    /* space reserved for "HUNGER"/"HAPPY" text          */
 
 /**
- * @brief  Clamp a signed value into [STAT_MIN, STAT_MAX].
+ * @brief  Clamp a signed value into [STAT_MIN, STAT_MAX]
  *         Using int16_t lets us add a negative delta without wrapping around
- *         (uint8_t 5 - 10 would wrap to 251, which is the bug clamping prevents).
+ *         (uint8_t 5 - 10 would wrap to 251 - which is the bug clamping prevents).
  */
 static uint8_t clamp_stat(int16_t value) {
   if (value < (int16_t)STAT_MIN) return STAT_MIN;
@@ -39,13 +42,49 @@ static uint8_t clamp_stat(int16_t value) {
 /* Setup / reset  */
 
 void PetStats_Init(void) {
-  hunger         = STAT_START;   /* start both stats at the same healthy value */
-  happiness      = STAT_START;
+  pet.hunger     = STAT_START;   /* start both stats at the same healthy value */
+  pet.happiness  = STAT_START;
+  pet.state      = PET_ALIVE;
   timers_started = 0;            /* timers re-sync on the next Update()        */
 }
 
 void PetStats_Reset(void) {
   PetStats_Init();               /* restart = same as a fresh power-up         */
+  PetStats_SaveNow();            /* so a power-off right after restart doesn't bring the old pet back */
+}
+
+/* Non-volatile save / load */
+
+static uint32_t   last_save_tick = 0;                          /* time (ms) of the last autosave check */
+static PetStats_t saved = { STAT_MAX + 1, STAT_MAX + 1, 0 };   /* what is in flash (impossible = nothing yet) */
+
+/**
+ * @brief  Restore the pet struct from flash if a save exists.
+ *         Call once at startup, right after PetStats_Init().
+ * @retval 1 if saved values were restored, 0 if this is a fresh pet
+ */
+uint8_t PetStats_LoadSaved(void) {
+  PetStats_t loaded;
+  if (!PetFlash_Load(&loaded)) return 0;        /* first power-up: keep STAT_START */
+
+  pet.hunger    = clamp_stat((int16_t)loaded.hunger);     /* clamp in case limits changed since the save */
+  pet.happiness = clamp_stat((int16_t)loaded.happiness);
+  pet.state     = (loaded.state <= PET_RAN_AWAY) ? loaded.state : PET_ALIVE;
+  saved = pet;
+  return 1;
+}
+
+/**
+ * @brief  Write the pet struct to flash right away if it changed
+ *         Skipping unchanged values saves flash wear.
+ */
+void PetStats_SaveNow(void) {
+  if (pet.hunger == saved.hunger && pet.happiness == saved.happiness &&
+      pet.state  == saved.state) return;
+
+  if (PetFlash_Save(&pet)) {
+    saved = pet;
+  }
 }
 
 /* time-based decay */
@@ -61,6 +100,7 @@ void PetStats_Update(uint32_t now_ms) {
   if (!timers_started) {
     last_hunger_tick = now_ms;
     last_happy_tick  = now_ms;
+    last_save_tick   = now_ms;
     timers_started   = 1;
     return;
   }
@@ -68,23 +108,29 @@ void PetStats_Update(uint32_t now_ms) {
   /* unsigned subtraction handles HAL_GetTick() wrapping after ~49 days. */
   if (now_ms - last_hunger_tick >= HUNGER_DECAY_MS) {
     last_hunger_tick += HUNGER_DECAY_MS;   /* step forward by one period, keeps timing exact */
-    hunger = clamp_stat((int16_t)hunger - (int16_t)HUNGER_DECAY_AMOUNT);
+    pet.hunger = clamp_stat((int16_t)pet.hunger - (int16_t)HUNGER_DECAY_AMOUNT);
   }
 
   if (now_ms - last_happy_tick >= HAPPY_DECAY_MS) {
     last_happy_tick += HAPPY_DECAY_MS;
-    happiness = clamp_stat((int16_t)happiness - (int16_t)HAPPY_DECAY_AMOUNT);
+    pet.happiness = clamp_stat((int16_t)pet.happiness - (int16_t)HAPPY_DECAY_AMOUNT);
+  }
+
+  /* autosave to flash every SAVE_INTERVAL_MS (only writes if something changed) */
+  if (now_ms - last_save_tick >= SAVE_INTERVAL_MS) {
+    last_save_tick = now_ms;
+    PetStats_SaveNow();
   }
 }
 
 /*  Actions  */
 
 void PetStats_AddHunger(int16_t delta) {
-  hunger = clamp_stat((int16_t)hunger + delta);        /* any change, always clamped */
+  pet.hunger = clamp_stat((int16_t)pet.hunger + delta);  /* any change, always clamped */
 }
 
 void PetStats_AddHappiness(int16_t delta) {
-  happiness = clamp_stat((int16_t)happiness + delta);
+  pet.happiness = clamp_stat((int16_t)pet.happiness + delta);
 }
 
 void PetStats_Feed(void) {
@@ -97,12 +143,12 @@ void PetStats_Play(void) {
 
 /* Read-only  */
 
-uint8_t PetStats_GetHunger(void)       { return hunger; }
-uint8_t PetStats_GetHappiness(void)    { return happiness; }
-uint8_t PetStats_IsHungerLow(void)     { return hunger    <= LOW_STAT_THRESHOLD; }
-uint8_t PetStats_IsHappinessLow(void)  { return happiness <= LOW_STAT_THRESHOLD; }
-uint8_t PetStats_IsStarving(void)      { return hunger    == STAT_MIN; }
-uint8_t PetStats_IsMiserable(void)     { return happiness == STAT_MIN; }
+uint8_t PetStats_GetHunger(void)       { return pet.hunger; }
+uint8_t PetStats_GetHappiness(void)    { return pet.happiness; }
+uint8_t PetStats_IsHungerLow(void)     { return pet.hunger    <= LOW_STAT_THRESHOLD; }
+uint8_t PetStats_IsHappinessLow(void)  { return pet.happiness <= LOW_STAT_THRESHOLD; }
+uint8_t PetStats_IsStarving(void)      { return pet.hunger    == STAT_MIN; }
+uint8_t PetStats_IsMiserable(void)     { return pet.happiness == STAT_MIN; }
 
 /*  Placeholder meters */
 
@@ -135,8 +181,8 @@ static void draw_one_meter(uint16_t x, uint16_t y, const char *label, uint8_t va
 }
 
 void PetStats_DrawMeters(uint16_t x, uint16_t y) {
-  draw_one_meter(x, y,             "HUNGER", hunger);
-  draw_one_meter(x, y + METER_GAP, "HAPPY",  happiness);
+  draw_one_meter(x, y,             "HUNGER", pet.hunger);
+  draw_one_meter(x, y + METER_GAP, "HAPPY",  pet.happiness);
 }
 
 /* Low-stat alerts */

@@ -104,6 +104,8 @@ int main(void) {
   ILI9341_FillScreen(ILI9341_COLOR_WHITE);
     // init pet stats (hunger/happiness start values, decay timers)
   PetStats_Init();
+    // restore the saved pet struct from flash (if there is a save)
+  PetStats_LoadSaved();
 
   // main loop
   while (1) {

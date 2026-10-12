@@ -43,6 +43,23 @@
 /* Thresholds */
 #define LOW_STAT_THRESHOLD    25U    /* at or below this, the stat counts as "low"   */
 
+/* Pet state: set by the consequence logic */
+typedef enum {
+  PET_ALIVE    = 0,   /* normal play                         */
+  PET_DEAD     = 1,   /* hunger hit STAT_MIN                 */
+  PET_RAN_AWAY = 2    /* happiness hit STAT_MIN              */
+} PetState_t;
+
+/* Everything about the pet that must survive a power-off, in one struct.
+   This RAM copy is what the code reads and changes; PetStats_SaveNow()
+   mirrors it into flash (see pet_flash.h) and PetStats_LoadSaved() restores it. */
+typedef struct {
+  uint8_t hunger;      /* 0 = starving,  100 = full           */
+  uint8_t happiness;   /* 0 = miserable - 100 = very happy     */
+  uint8_t state;       /* a PetState_t value                  */
+} PetStats_t;
+
+extern PetStats_t pet;  /* the one global pet (defined in pet_stats.c) */
 /* Setup / reset */
 void    PetStats_Init(void);                   /* set both stats to STAT_START        */
 void    PetStats_Reset(void);                  /* same as Init, for the restart code  */
@@ -64,8 +81,13 @@ uint8_t PetStats_IsHappinessLow(void);         /* 1 if happiness <= LOW_STAT_THR
 uint8_t PetStats_IsStarving(void);             /* 1 if hunger    == STAT_MIN (death)   */
 uint8_t PetStats_IsMiserable(void);            /* 1 if happiness == STAT_MIN (runaway) */
 
+/* Non-volatile memory: the pet struct survives power-off (see pet_flash.h) */
+#define SAVE_INTERVAL_MS      30000U /* autosave at most every 30 s, only if changed  */
+uint8_t PetStats_LoadSaved(void);              /* call once after Init; 1 = restored  */
+void    PetStats_SaveNow(void);                /* write to flash now if pet changed   */
 /* Placeholder meters - draws two bars + numbers at the given top-left corner */
 void    PetStats_DrawMeters(uint16_t x, uint16_t y);
+
 
 /* Low-stat alerts: blinking "HUNGRY!" / "SAD!" text next to the status bars */
 #define ALERT_BLINK_MS        500U   /* alert text turns on/off every half second    */
