@@ -10,7 +10,7 @@
 #include "ili9341.h"     /* ILI9341_FillRect, ILI9341_DrawRect, ILI9341_DrawString */
 #include <stdio.h>       /* snprintf for the number labels                        */
 
-/* ---------------- Private state (only this file can touch these) ---------------- */
+/* Private state (only this file can touch these) */
 static uint8_t  hunger    = STAT_START;   /* 0 = starving, 100 = full            */
 static uint8_t  happiness = STAT_START;   /* 0 = miserable, 100 = very happy     */
 
@@ -18,7 +18,7 @@ static uint32_t last_hunger_tick = 0;     /* time (ms) of the last hunger drop  
 static uint32_t last_happy_tick  = 0;     /* time (ms) of the last happy drop    */
 static uint8_t  timers_started   = 0;     /* 0 until the first Update() call     */
 
-/* ---------------- Placeholder meter layout ---------------- */
+/* -Placeholder meter layout */
 #define METER_W        100U   /* full bar width in pixels (1 pixel per stat point) */
 #define METER_H        10U    /* bar height in pixels                              */
 #define METER_GAP      22U    /* vertical distance between the two bars            */
@@ -36,7 +36,7 @@ static uint8_t clamp_stat(int16_t value) {
   return (uint8_t)value;
 }
 
-/* ---------------- Setup / reset ---------------- */
+/* Setup / reset  */
 
 void PetStats_Init(void) {
   hunger         = STAT_START;   /* start both stats at the same healthy value */
@@ -48,17 +48,16 @@ void PetStats_Reset(void) {
   PetStats_Init();               /* restart = same as a fresh power-up         */
 }
 
-/* ---------------- Time-based decay ---------------- */
+/* time-based decay */
 
 /**
- * @brief  Lower the stats as time passes. Non-blocking: it only compares the
- *         current time to the last drop time, so it returns immediately and
- *         never delays the menu or animations.
+ * @brief  Lower the stats as time passes - Non-blocking:  only compares the
+ *         current time to the last drop time - returns immediately and
+ *         never delays the menu or animations
  * @param  now_ms  current time from HAL_GetTick()
  */
 void PetStats_Update(uint32_t now_ms) {
-  /* First call: start the timers from "now" so the stats don't
-     drop instantly because last_*_tick was still 0. */
+  /* first call: start the timers from "now" so the stats don't drop instantly because last_*_tick was still 0 */
   if (!timers_started) {
     last_hunger_tick = now_ms;
     last_happy_tick  = now_ms;
@@ -66,7 +65,7 @@ void PetStats_Update(uint32_t now_ms) {
     return;
   }
 
-  /* Unsigned subtraction handles HAL_GetTick() wrapping after ~49 days. */
+  /* unsigned subtraction handles HAL_GetTick() wrapping after ~49 days. */
   if (now_ms - last_hunger_tick >= HUNGER_DECAY_MS) {
     last_hunger_tick += HUNGER_DECAY_MS;   /* step forward by one period, keeps timing exact */
     hunger = clamp_stat((int16_t)hunger - (int16_t)HUNGER_DECAY_AMOUNT);
@@ -78,7 +77,7 @@ void PetStats_Update(uint32_t now_ms) {
   }
 }
 
-/* ---------------- Actions ---------------- */
+/*  Actions  */
 
 void PetStats_AddHunger(int16_t delta) {
   hunger = clamp_stat((int16_t)hunger + delta);        /* any change, always clamped */
@@ -96,7 +95,7 @@ void PetStats_Play(void) {
   PetStats_AddHappiness((int16_t)PLAY_AMOUNT);          /* playing cheers it up       */
 }
 
-/* ---------------- Read-only access ---------------- */
+/* Read-only  */
 
 uint8_t PetStats_GetHunger(void)       { return hunger; }
 uint8_t PetStats_GetHappiness(void)    { return happiness; }
@@ -105,11 +104,11 @@ uint8_t PetStats_IsHappinessLow(void)  { return happiness <= LOW_STAT_THRESHOLD;
 uint8_t PetStats_IsStarving(void)      { return hunger    == STAT_MIN; }
 uint8_t PetStats_IsMiserable(void)     { return happiness == STAT_MIN; }
 
-/* ---------------- Placeholder meters ---------------- */
+/*  Placeholder meters */
 
 /**
- * @brief  Draw one labeled bar. Filled part = current value, rest = background.
- *         Red when the stat is low, green otherwise.
+ * @brief  Draw one labeled bar - Filled part = current value - rest = background.
+ *         Red when the stat is low - green otherwise
  */
 static void draw_one_meter(uint16_t x, uint16_t y, const char *label, uint8_t value) {
   char num[6];                                           /* "100" + null, with room */
@@ -121,8 +120,7 @@ static void draw_one_meter(uint16_t x, uint16_t y, const char *label, uint8_t va
   /* Label on the left */
   ILI9341_DrawString(x, y + 1, label, ILI9341_COLOR_BLACK, ILI9341_COLOR_WHITE, LABEL_SIZE);
 
-  /* Filled part, then the empty part (redrawing only this small region,
-     not the whole screen, keeps it fast over SPI) */
+  /* Filled part - then the empty part */
   if (filled > 0)
     ILI9341_FillRect(bar_x, y, filled, METER_H, color);
   if (filled < METER_W)
