@@ -67,4 +67,16 @@ uint8_t PetStats_IsMiserable(void);            /* 1 if happiness == STAT_MIN (ru
 /* Placeholder meters - draws two bars + numbers at the given top-left corner */
 void    PetStats_DrawMeters(uint16_t x, uint16_t y);
 
+/* Low-stat alerts: blinking "HUNGRY!" / "SAD!" text next to the status bars */
+#define ALERT_BLINK_MS        500U   /* alert text turns on/off every half second    */
+#define HUNGER_ALERT_X        50U    /* lines up with the left edge of the hunger bar */
+#define HUNGER_ALERT_Y        36U    /* just under the hunger bar - above the pet      */
+#define HAPPY_ALERT_X         50U    /* lines up with the left edge of the happy bar  */
+#define HAPPY_ALERT_Y         270U   /* just above the happiness bar -  below the pet   */
+#define ALERT_TEXT_SIZE       2U     /* 2x the 5x7 font = 10x14 pixels per letter     */
+
+/* Call every pass while the main pet screen is showing
+   enabled = 0 hides both alerts (e.g. on the dead screen) */
+void    PetStats_DrawAlerts(uint32_t now_ms, uint8_t enabled);
+
 #endif /* PET_STATS_H */

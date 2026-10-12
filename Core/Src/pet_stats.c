@@ -138,3 +138,55 @@ void PetStats_DrawMeters(uint16_t x, uint16_t y) {
   draw_one_meter(x, y,             "HUNGER", hunger);
   draw_one_meter(x, y + METER_GAP, "HAPPY",  happiness);
 }
+
+/* Low-stat alerts */
+
+/* Blink + drawing state: only redraw when something changes - so the alerts
+   cost almost nothing over SPI on loop passes where nothing changes */
+static uint32_t last_blink_tick = 0;      /* time (ms) of the last on/off flip  */
+static uint8_t  blink_on        = 1;      /* 1 = text visible this half second  */
+static uint8_t  hunger_alert_shown = 0;   /* what is currently on the screen    */
+static uint8_t  happy_alert_shown  = 0;
+
+/**
+ * @brief  Draw or erase one alert - but only if it changed since last time
+ * @param  shown  pointer to the "currently on screen" flag for this alert
+ * @param  want   1 = text should be visible now - 0 = should be blank
+ */
+static void update_one_alert(uint16_t x, uint16_t y, const char *text,
+                             uint8_t *shown, uint8_t want) {
+  if (want == *shown) return;                          /* nothing changed: skip SPI */
+
+  /* Width of the text in pixels: each letter is 6 columns (5 + 1 gap) * size */
+  uint16_t len = 0;
+  while (text[len] != '\0') len++;
+  uint16_t w = len * 6U * ALERT_TEXT_SIZE;
+  uint16_t h = 7U * ALERT_TEXT_SIZE;
+
+  if (want) {
+    ILI9341_DrawString(x, y, text, ILI9341_COLOR_RED, ILI9341_COLOR_WHITE, ALERT_TEXT_SIZE);
+  } else {
+    ILI9341_FillRect(x, y, w, h, ILI9341_COLOR_WHITE);  /* erase with background */
+  }
+  *shown = want;
+}
+
+/**
+ * @brief  Blink HUNGRY! / SAD! while a stat is at or below LOW_STAT_THRESHOLD
+ *         Non-blocking: uses the same HAL_GetTick timing idea as PetStats_Update
+ * @param  now_ms   current time from HAL_GetTick()
+ * @param  enabled  0 = force both alerts off (dead screen, menu, etc.)
+ */
+void PetStats_DrawAlerts(uint32_t now_ms, uint8_t enabled) {
+  /* Flip the blink every ALERT_BLINK_MS */
+  if (now_ms - last_blink_tick >= ALERT_BLINK_MS) {
+    last_blink_tick = now_ms;
+    blink_on ^= 1U;
+  }
+
+  uint8_t want_hunger = enabled && blink_on && PetStats_IsHungerLow();
+  uint8_t want_happy  = enabled && blink_on && PetStats_IsHappinessLow();
+
+  update_one_alert(HUNGER_ALERT_X, HUNGER_ALERT_Y, "HUNGRY!", &hunger_alert_shown, want_hunger);
+  update_one_alert(HAPPY_ALERT_X,  HAPPY_ALERT_Y,  "SAD!",    &happy_alert_shown,  want_happy);
+}

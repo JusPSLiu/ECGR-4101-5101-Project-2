@@ -72,4 +72,5 @@ void updateAnimState() {
 
 void updateHud() {
     updateHudDisplay(PetStats_GetHunger(), PetStats_GetHappiness());
+        PetStats_DrawAlerts(HAL_GetTick(), !is_dead);   /* blink low-stat alerts - hidden once dead */
 }
