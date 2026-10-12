@@ -37,6 +37,7 @@
 #include <stdio.h>
 #include "menu.h"
 #include "character.h"
+#include "pet_stats.h"
 
 /* Private variables ---------------------------------------------------------*/
 SPI_HandleTypeDef hspi1;
@@ -101,12 +102,17 @@ int main(void) {
   // init lcd
   ILI9341_Init(&hspi1);
   ILI9341_FillScreen(ILI9341_COLOR_WHITE);
+    // init pet stats (hunger/happiness start values, decay timers)
+  PetStats_Init();
 
   // main loop
   while (1) {
     uint32_t now = HAL_GetTick();
 
     readInputs(Joystick_Read());
+
+        // stats drain with real time - even while the menu is open
+    updateStats(now);
 
     if (screen_refresh) {
       if (isMenuOpen) {drawMenuBackground(); drawMenu(menuState); }
@@ -125,8 +131,6 @@ int main(void) {
         last_frame_time = now;
         incrementFrameCount();
 
-        updateBattery();
-        updateHappy();
       }
 
       updateHud();
