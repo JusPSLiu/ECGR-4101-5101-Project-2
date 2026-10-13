@@ -7,10 +7,14 @@ enum anims {
     anim_idle_loop,
     anim_sad_loop,
     anim_lowbatt_loop,
+    anim_sleep_loop,
+    anim_left_loop,
     anim_dead_loop,
     anim_eat,
     anim_backflip,
     anim_dance,
+    anim_fall_asleep,
+    anim_leave,
     anim_die
 };
 

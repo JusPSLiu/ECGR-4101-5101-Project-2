@@ -47,6 +47,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
     Core/Src/pet_stats.c
     Core/Src/catch_stars.c
+    Core/Src/pet_flash.c
 )
 
 # Add include paths

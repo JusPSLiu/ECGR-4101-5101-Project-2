@@ -1,14 +1,12 @@
 #include "character.h"
+#include "pet_stats.h"   /* hunger/happiness values, decay timer, clamping */
 
-#define UPDATE_COOLDOWN 10
 
-uint8_t battery_percent = 100;
-uint8_t happy_percent = 100;
-uint8_t is_dead;
-
-uint8_t happ_update_counter = UPDATE_COOLDOWN;
-uint8_t batt_update_counter = UPDATE_COOLDOWN;
 static uint8_t is_dancing;
+/* Last values seen by updateStats() -so the animation state is only
+   re-checked when a stat actually changes (not on every loop pass). */
+static uint8_t last_hunger    = STAT_MAX + 1;   /* impossible value forces the first check */
+static uint8_t last_happiness = STAT_MAX + 1;
 
 enum states {
     state_idle
@@ -19,65 +17,62 @@ void characterLogic() {
     drawSprite();
 }
 
-void updateHappy() {
-    if (is_dead) return;
-    
-    happ_update_counter--;
-    if (happ_update_counter == 0) {
-        happy_percent--;
-        happ_update_counter = UPDATE_COOLDOWN;
+/**
+ * @brief  Advance hunger/happiness with real elapsed time
+ *         Call once every main loop pass with HAL_GetTick().
+ *          timing itself lives in pet_stats.c - this just reacts
+ *         when a value changes so the right loop animation plays
+ */
+void updateStats(uint32_t now) {
+    PetStats_Update(now);                      /* time-based decay + clamping (frozen once not alive) */
 
-        updateAnimState();
-    }
-}
-void updateBattery() {
-    if (is_dead) return;
-    
-    batt_update_counter--;
-    if (batt_update_counter == 0) {
-        battery_percent--;
-        batt_update_counter = UPDATE_COOLDOWN;
+    uint8_t hunger    = PetStats_GetHunger();
+    uint8_t happiness = PetStats_GetHappiness();
 
-        updateAnimState();
+    if (hunger != last_hunger || happiness != last_happiness) {
+        last_hunger    = hunger;
+        last_happiness = happiness;
+        updateAnimState();                     /* pick idle / low battery / sad / dead */
     }
 }
 
 void feed() {
     is_dancing = 0;
-    battery_percent = 100;
+    if (pet.state != PET_ALIVE) return;        /* a dead / runaway pet can't eat */
+    PetStats_Feed();                           /* hunger += FEED_AMOUNT, clamped */
     updateAnimState();
     triggerAnim(anim_eat);
 }
 void play() {
     is_dancing = 0;
-    happy_percent = 100;
+    if (pet.state != PET_ALIVE) return;        /* a dead / runaway pet can't play */
+    PetStats_Play();                           /* happiness += PLAY_AMOUNT, clamped */
     updateAnimState();
     triggerAnim(anim_backflip);
 }
 void dance() {
-    if (is_dead) return;
+    if (pet.state != PET_ALIVE) return;
 
     is_dancing = 1;
+    PetStats_Dance();                          /* happiness += 10, hunger -= 5, clamped */
     setLoop(anim_dance);
+    updateAnimState();
+    triggerAnim(anim_dance);
 }
 
-// im hardcoding this hierarchy of priority for the underlying loop animation.
-// this is a small enough project.
+//  hardcoding this hierarchy of priority for the underlying loop animation
 void updateAnimState() {
-    if (battery_percent == 0 || happy_percent == 0) {
-        is_dead = 1;
-        battery_percent = 0; happy_percent = 0;
-        triggerAnim(anim_die);
-    }
-
-    if (is_dead) {
+    if (pet.state == PET_DEAD) {
         is_dancing = 0;
         setLoop(anim_dead_loop);
+    } else if (pet.state == PET_RAN_AWAY) {
+        is_dancing = 0;
+        setLoop(anim_sad_loop);                /* placeholder until the runaway screen is made */
     } else if (is_dancing) {
         setLoop(anim_dance);
-    } else if (battery_percent < 25) {
+    } else if (PetStats_GetHunger() < 25) {
         setLoop(anim_lowbatt_loop);
-    } else if (happy_percent < 50) {
+    } else if (PetStats_GetHappiness() < 50) {
         setLoop(anim_sad_loop);
     } else {
         setLoop(anim_idle_loop);
@@ -85,5 +80,6 @@ void updateAnimState() {
 }
 
 void updateHud() {
-    updateHudDisplay(battery_percent, happy_percent);
+    updateHudDisplay(PetStats_GetHunger(), PetStats_GetHappiness());
+        PetStats_DrawAlerts(HAL_GetTick(), pet.state == PET_ALIVE);   /* blink low-stat alerts - hidden once dead */
 }

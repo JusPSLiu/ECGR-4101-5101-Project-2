@@ -39,6 +39,7 @@
 #include "character.h"
 #include "graphics_controller.h"
 #include "catch_stars.h"
+#include "pet_stats.h"
 
 /* Private variables ---------------------------------------------------------*/
 SPI_HandleTypeDef hspi1;
@@ -105,6 +106,12 @@ int main(void) {
   // init lcd
   ILI9341_Init(&hspi1);
   ILI9341_FillScreen(ILI9341_COLOR_WHITE);
+    // init pet stats (hunger/happiness start values, decay timers)
+  PetStats_Init();
+    // restore the saved pet struct from flash (if there is a save)
+  PetStats_LoadSaved();
+    // show the right animation for the loaded state (e.g. still dead after a power-off)
+  updateAnimState();
 
   // main loop
   while (1) {
@@ -116,6 +123,23 @@ int main(void) {
     readInputs(joy);
 
     if (updateCatchStars(joy)) continue;
+
+        // stats drain with real time - even while the menu is open
+    updateStats(now);
+
+        // consequences: poll the pet struct every loop pass
+    if (pet.state == PET_ALIVE) {
+      if (PetStats_IsStarving()) {
+        pet.state = PET_DEAD;          // too hungry - the pet dies
+        triggerAnim(anim_die);         // play the death animation once
+        updateAnimState();             // then loop the dead animation
+        PetStats_SaveNow();            // save right away (rare event - safe for flash wear)
+      } else if (PetStats_IsMiserable()) {
+        pet.state = PET_RAN_AWAY;      // too unhappy -> the pet runs away
+        updateAnimState();
+        PetStats_SaveNow();            // save right away (rare event - safe for flash wear)
+      }
+    }
 
     if (screen_refresh) {
       if (isMenuOpen) {drawMenuBackground(); drawMenu(menuState); }
@@ -134,8 +158,6 @@ int main(void) {
         last_frame_time = now;
         incrementFrameCount();
 
-        updateBattery();
-        updateHappy();
       }
 
       updateHud();

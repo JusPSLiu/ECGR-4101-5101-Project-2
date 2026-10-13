@@ -10,8 +10,7 @@ void play();
 void dance();
 
 // MUTATORS
-void updateHappy();
-void updateBattery();
+   void updateStats(uint32_t now);   /* call every loop pass with HAL_GetTick() */
 
 // INTERNAL LOGIC
 void characterLogic();
