@@ -36,8 +36,11 @@
 #include "ili9341.h"
 #include <stdint.h>
 #include <stdio.h>
-#include "sprite.h"
 #include "menu.h"
+#include "character.h"
+#include "graphics_controller.h"
+#include "catch_stars.h"
+#include "pet_stats.h"
 #include "i2c.h"
 #include "stm32l4xx_hal.h"
 #include <math.h>
@@ -52,12 +55,208 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_SPI1_Init(void);
 
+static uint8_t Joystick_Read(void);
+static uint8_t updateCatchStars(uint8_t joy);
+
+/* UTILITIES */
+void readInputs(uint8_t);
+void performAction(int selection);
+
+/* utils */
+uint8_t clamp(uint8_t, uint8_t, uint8_t);
+
 /* Joystick (B1) bit flags returned by Joystick_Read() */
 #define JOY_LEFT_MASK (1U << 0)
 #define JOY_CENTER_MASK (1U << 1)
 #define JOY_DOWN_MASK (1U << 2)
 #define JOY_RIGHT_MASK (1U << 3)
 #define JOY_UP_MASK (1U << 4)
+
+// 100x100 pixels, all white (16-bit RGB565 format)
+// 100x100 pixel 2-byte (16-bit RGB565) hex code array for an all-white image
+// A 100x100 2D array of all-white pixels using 16-bit (2-byte) hex codes
+// (0xFFFF for RGB565)
+const unsigned short white_image[200][200] = {
+    [0 ... 199] = {[0 ... 199] = 0xFFFF}};
+
+#define SCREEN_WIDTH 240
+#define SCREEN_HEIGHT 320
+
+#define ANIMATION_DELAY 130
+
+#define DEBOUNCE_LEN 5
+
+
+int menuState = 0;
+uint8_t menuStateChanged = 0;
+int isMenuOpen = 0;
+
+uint32_t last_frame_time = 0;
+
+uint8_t screen_refresh = 1;
+uint8_t input_debounce = 0;
+static uint8_t center_release_required;
+
+/**
+ * @brief  The application entry point.
+ * @retval int
+ */
+int main(void) {
+  // init
+  HAL_Init();
+  // init clk
+  SystemClock_Config();
+  // init peripherals
+  MX_GPIO_Init();
+  MX_SPI1_Init();
+  // init lcd
+  ILI9341_Init(&hspi1);
+  ILI9341_FillScreen(ILI9341_COLOR_WHITE);
+    // init pet stats (hunger/happiness start values, decay timers)
+  PetStats_Init();
+    // restore the saved pet struct from flash (if there is a save)
+  PetStats_LoadSaved();
+    // show the right animation for the loaded state (e.g. still dead after a power-off)
+  updateAnimState();
+
+  // main loop
+  while (1) {
+    uint32_t now = HAL_GetTick();
+    uint8_t joy = Joystick_Read();
+
+    if (updateCatchStars(joy)) continue;
+
+    readInputs(joy);
+    
+    if (updateCatchStars(joy)) continue;
+
+        // stats drain with real time - even while the menu is open
+    updateStats(now);
+
+        // consequences: poll the pet struct every loop pass
+    if (pet.state == PET_ALIVE) {
+      if (PetStats_IsStarving()) {
+        pet.state = PET_DEAD;          // too hungry - the pet dies
+        triggerAnim(anim_die);         // play the death animation once
+        updateAnimState();             // then loop the dead animation
+        PetStats_SaveNow();            // save right away (rare event - safe for flash wear)
+      } else if (PetStats_IsMiserable()) {
+        pet.state = PET_RAN_AWAY;      // too unhappy -> the pet runs away
+        triggerAnim(anim_leave);
+        updateAnimState();
+        PetStats_SaveNow();            // save right away (rare event - safe for flash wear)
+      }
+    }
+
+    if (screen_refresh) {
+      if (isMenuOpen) {drawMenuBackground(); drawMenu(menuState); }
+      else drawHudBackground();
+      screen_refresh = 0;
+    }
+
+    if (isMenuOpen) {
+      // only redraw if change
+      if (menuStateChanged) {
+        menuState = drawMenu(menuState);
+        menuStateChanged = 0;
+      }
+    } else {
+      if (now - last_frame_time >= ANIMATION_DELAY) {
+        last_frame_time = now;
+        incrementFrameCount();
+      }
+
+      updateHud();
+      characterLogic();
+    }
+  }
+}
+
+static uint8_t updateCatchStars(uint8_t joy) {
+  if (!catchStarsIsActive()) {
+    PetStats_EndGame();
+    return 0;
+  }
+
+  catchStarsUpdate((joy & JOY_LEFT_MASK) != 0,
+                   (joy & JOY_RIGHT_MASK) != 0,
+                   (joy & JOY_CENTER_MASK) != 0);
+  if (!catchStarsIsActive()) {
+    center_release_required = 1;
+    screen_refresh = 1;
+  }
+  return 1;
+}
+
+void readInputs(uint8_t joy) {
+  if (center_release_required && !(joy & JOY_CENTER_MASK)) {
+    center_release_required = 0;
+  }
+
+  if (input_debounce > 0) input_debounce--;
+  else {
+    // LR
+    if (joy & JOY_LEFT_MASK) {
+      input_debounce = DEBOUNCE_LEN;
+    } else if (joy & JOY_RIGHT_MASK) {
+      input_debounce = DEBOUNCE_LEN;
+    }
+
+    // CLICK
+    if ((joy & JOY_CENTER_MASK) && !center_release_required) {
+      if (isMenuOpen == 0) isMenuOpen = 1;
+      else {
+        isMenuOpen = 0;
+        performAction(menuState);
+      }
+
+      input_debounce = DEBOUNCE_LEN;
+      screen_refresh = 1;
+    }
+
+    // DOWN
+    if (joy & JOY_DOWN_MASK) {
+      if (isMenuOpen) {
+        menuState++; menuStateChanged = 1;
+      }
+      input_debounce = DEBOUNCE_LEN;
+    }  
+    
+    if (joy & JOY_UP_MASK)  {
+      if (isMenuOpen) {
+        menuState--; menuStateChanged = 1;
+      }
+      input_debounce = DEBOUNCE_LEN;
+    }
+  }
+}
+
+
+void performAction(int selection) {
+  if (pet.state == PET_DEAD) return;
+  switch (selection) {
+    case 0:
+      feed();
+      break;
+
+    case 1:
+      dance();
+      break;
+
+    case 2:
+      PetStats_StartGame();
+      catchStarsStart();
+      endAnim();
+      break;
+    
+    case 3:
+      PetStats_Reset();
+
+    default:
+      break;
+  }
+}
+
 
 static uint8_t Joystick_Read(void) {
   uint8_t state = 0;
@@ -82,84 +281,6 @@ static uint8_t Joystick_Read(void) {
 
   return state;
 }
-
-int sprite_x = (SCREEN_WIDTH - DST_SIZE) / 2;
-int sprite_y = (SCREEN_HEIGHT - DST_SIZE) / 2;
-
-const unsigned short white_image[DST_SIZE][DST_SIZE] = {[0 ... (DST_SIZE - 1)] = {[0 ... (DST_SIZE - 1)] = ILI9341_COLOR_WHITE}};
-
-int frame_count = 0;
-int total_frames = 4;
-uint32_t last_frame_time = 0;
-uint32_t ud_frame_time = 0;
-
-#define ANIMATION_DELAY (int16_t)((1 / 2) * 1000)
-int dobf = 0;
-/**
- * @brief  The application entry point.
- * @retval int
- */
-int main(void) {
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick.
-   */
-  HAL_Init();
-
-  /* Configure the system clock */
-  SystemClock_Config();
-
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_SPI1_Init();
-
-
-  /* Initialize the LCD and show a splash screen */
-  ILI9341_Init(&hspi1);
-
-  // added inits
-  MX_I2C1_Init();
-  Sound_Init();
-  MPU9250_Power_Init();
-  HAL_StatusTypeDef MPU9250_WakeUp();
-
-  /* Clear Screen on Start */
-  ILI9341_FillScreen(ILI9341_COLOR_WHITE);
-
-  while (1) {
-    uint32_t now = HAL_GetTick();
-    MPU9250AccelerometerData_t mpu9250Data = readMPU9250();
-    float delta = getDelta(mpu9250Data.ay);
-    dobf = detectSingleAxisShake(delta);
-
-    if (dobf) {
-      frame_count = 0;
-      backFlipState = FLIPPING;
-      PlayJump();
-    }
-
-    if (now - last_frame_time >= ANIMATION_DELAY) {
-        last_frame_time = now;
-        frame_count = (frame_count + 1) % total_frames;
-
-        if (backFlipState == FLIPPING) {
-          ILI9341_DrawImageScaled(40, 56, 20, 26, (const unsigned short *)backflip_anim[frame_count % backflip_anim_len], 20, 160, 208);
-          
-          if (frame_count %  backflip_anim_len == backflip_anim_len - 2) {
-            backFlipState = NOT_FLIPPING;
-            frame_count = 0;
-          }
-        
-        } 
-        else {
-          ILI9341_DrawImageScaled(40, 56, 20, 26, (const unsigned short *)idle_anim[frame_count % 4], 20, 160, 208);
-        }
-      }
-
-    bool x = Sound_Play();
-  }
-}
-
-
-
 
 /**
  * @brief SPI1 Initialization Function

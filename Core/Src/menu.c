@@ -1,42 +1,34 @@
-#include "ili9341.h"
 #include "menu.h"
 
-void drawMenu(int menu_state) {
-  switch (menu_state) {
-    case 0:
-      ILI9341_DrawString(0 , 7 * (0 * 4) + (5 * 0), " > FEED < ", ILI9341_COLOR_PINK, ILI9341_COLOR_WHITE, 4);
-      ILI9341_DrawString(0 , 7 * (1 * 4) + (5 * 1), "   PLAY   ", ILI9341_COLOR_PINK, ILI9341_COLOR_WHITE, 4);
-      ILI9341_DrawString(0 , 7 * (2 * 4) + (5 * 2), "   WALK   ", ILI9341_COLOR_PINK, ILI9341_COLOR_WHITE, 4);
-      ILI9341_DrawString(0 , 7 * (3 * 4) + (5 * 3), "   MYST   ", ILI9341_COLOR_PINK, ILI9341_COLOR_WHITE, 4);
-      break;
+uint8_t drawMenu(int menuState) {
+  char *menuoptions[] = {
+    "  FEED  ",
+    "  DANCE  ",
+    "  STARS  ",
+    "  RESET  "};
+  char *selectedoptions[] = {
+    "> FEED <",
+    "> DANCE <",
+    "> STARS <",
+    "> RESET <"};
+  uint8_t num_options = 4;
+  
+  // wraparound
+  if (menuState < 0) menuState = num_options - 1;
+  else menuState %= num_options;
 
-    case 1:
-      ILI9341_DrawString(0 , 7 * (0 * 4) + (5 * 0), "   FEED   ", ILI9341_COLOR_PINK, ILI9341_COLOR_WHITE, 4);
-      ILI9341_DrawString(0 , 7 * (1 * 4) + (5 * 1), " > PLAY < ", ILI9341_COLOR_PINK, ILI9341_COLOR_WHITE, 4);
-      ILI9341_DrawString(0 , 7 * (2 * 4) + (5 * 2), "   WALK   ", ILI9341_COLOR_PINK, ILI9341_COLOR_WHITE, 4);
-      ILI9341_DrawString(0 , 7 * (3 * 4) + (5 * 3), "   MYST   ", ILI9341_COLOR_PINK, ILI9341_COLOR_WHITE, 4);
-      
-      break;
+  // draw
+  uint8_t y_pos = 0;
+  for (int i=0;i<num_options;i++) {
+    char *curr_str;
+    short color;
 
-    case 2:
-      ILI9341_DrawString(0 , 7 * (0 * 4) + (5 * 0), "   FEED   ", ILI9341_COLOR_PINK, ILI9341_COLOR_WHITE, 4);
-      ILI9341_DrawString(0 , 7 * (1 * 4) + (5 * 1), "   PLAY   ", ILI9341_COLOR_PINK, ILI9341_COLOR_WHITE, 4);
-      ILI9341_DrawString(0 , 7 * (2 * 4) + (5 * 2), " > WALK < ", ILI9341_COLOR_PINK, ILI9341_COLOR_WHITE, 4);
-      ILI9341_DrawString(0 , 7 * (3 * 4) + (5 * 3), "   MYST   ", ILI9341_COLOR_PINK, ILI9341_COLOR_WHITE, 4);
-      break;
+    if (menuState == i) {curr_str = selectedoptions[i]; color=ILI9341_COLOR_BLACK;}
+    else {curr_str = menuoptions[i]; color=ILI9341_COLOR_PINK;}
 
-    case 3:
-      ILI9341_DrawString(0 , 7 * (0 * 4) + (5 * 0), "   FEED   ", ILI9341_COLOR_PINK, ILI9341_COLOR_WHITE, 4);
-      ILI9341_DrawString(0 , 7 * (1 * 4) + (5 * 1), "   PLAY   ", ILI9341_COLOR_PINK, ILI9341_COLOR_WHITE, 4);
-      ILI9341_DrawString(0 , 7 * (2 * 4) + (5 * 2), "   WALK   ", ILI9341_COLOR_PINK, ILI9341_COLOR_WHITE, 4);
-      ILI9341_DrawString(0 , 7 * (3 * 4) + (5 * 3), " > MYST < ", ILI9341_COLOR_PINK, ILI9341_COLOR_WHITE, 4);
-      break;
-
-    default:
-      ILI9341_DrawString(0 , 7 * (0 * 4) + (5 * 0), " > FEED < ", ILI9341_COLOR_PINK, ILI9341_COLOR_WHITE, 4);
-      ILI9341_DrawString(0 , 7 * (1 * 4) + (5 * 1), "   PLAY   ", ILI9341_COLOR_PINK, ILI9341_COLOR_WHITE, 4);
-      ILI9341_DrawString(0 , 7 * (2 * 4) + (5 * 2), "   WALK   ", ILI9341_COLOR_PINK, ILI9341_COLOR_WHITE, 4);
-      ILI9341_DrawString(0 , 7 * (3 * 4) + (5 * 3), "   MYST   ", ILI9341_COLOR_PINK, ILI9341_COLOR_WHITE, 4);
-      break;
+    ILI9341_DrawString(0 , y_pos, curr_str, color, ILI9341_COLOR_WHITE, 4);
+    y_pos += 33;
   }
+
+  return menuState;
 }
