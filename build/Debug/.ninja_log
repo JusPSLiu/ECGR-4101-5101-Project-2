@@ -32,9 +32,9 @@
 956	1571	8131354449404511	cmake/stm32cubemx/CMakeFiles/USB_Host_Library.dir/__/__/Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_pipes.c.obj	18d9e25a57243ba6
 876	1577	8131354448617255	cmake/stm32cubemx/CMakeFiles/USB_Host_Library.dir/__/__/Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_ctlreq.c.obj	92ff3e62dce1c21a
 1029	1812	8131354450144527	cmake/stm32cubemx/CMakeFiles/USB_Host_Library.dir/__/__/Middlewares/ST/STM32_USB_Host_Library/Class/AUDIO/Src/usbh_audio.c.obj	421b56e913c23ec2
-2	116	8136202039841320	build.ninja	6720883a7f5b5e01
-2	116	8136202039751322	C:/Users/jusps/Documents/ClassThings/ECGR 5101/project2/build/Debug/cmake_install.cmake	6720883a7f5b5e01
-2	116	8136202039791339	C:/Users/jusps/Documents/ClassThings/ECGR 5101/project2/build/Debug/cmake/stm32cubemx/cmake_install.cmake	6720883a7f5b5e01
+2	116	8136381216052428	build.ninja	6720883a7f5b5e01
+2	116	8136381215937882	C:/Users/jusps/Documents/ClassThings/ECGR 5101/project2/build/Debug/cmake_install.cmake	6720883a7f5b5e01
+2	116	8136381215992341	C:/Users/jusps/Documents/ClassThings/ECGR 5101/project2/build/Debug/cmake/stm32cubemx/cmake_install.cmake	6720883a7f5b5e01
 24	148	8131271340851348	cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/BSP/GFX01M2/gfx_font5x7.c.obj	8ea50486b55b80a9
 62	551	8132677996991812	CMakeFiles/Lab1_NUCLEO_L496.dir/Drivers/BSP/GFX01M2/gfx_font5x7.c.obj	a23e4175be70a04d
 4	278	8133862821464040	CMakeFiles/Lab1_NUCLEO_L496.dir/Drivers/BSP/GFX01M2/ili9341.c.obj	f4d4390ce3a0aed3
@@ -46,3 +46,51 @@
 9	298	8133862349569565	CMakeFiles/Lab1_NUCLEO_L496.dir/Core/Src/menu.c.obj	aa6a1f9a3c4de276
 10	262	8136149345460917	CMakeFiles/Lab1_NUCLEO_L496.dir/Core/Src/character.c.obj	3d995ce37af57b12
 15	295	8136149345531096	CMakeFiles/Lab1_NUCLEO_L496.dir/Core/Src/graphics_controller.c.obj	d88d719df81aea26
+128	325	8136381225442179	CMakeFiles/Lab1_NUCLEO_L496.dir/startup_stm32l496xx.s.obj	922c4f0709fa762
+153	384	8136381225621702	CMakeFiles/Lab1_NUCLEO_L496.dir/Drivers/BSP/GFX01M2/gfx_font5x7.c.obj	a23e4175be70a04d
+106	471	8136381225228144	CMakeFiles/Lab1_NUCLEO_L496.dir/Core/Src/sysmem.c.obj	f6a349414ad84b09
+115	644	8136381225312242	CMakeFiles/Lab1_NUCLEO_L496.dir/Core/Src/syscalls.c.obj	3eff6199d791d2b0
+88	702	8136381225008639	CMakeFiles/Lab1_NUCLEO_L496.dir/Core/Src/stm32l4xx_it.c.obj	638ca184000c81e0
+65	718	8136381224798332	CMakeFiles/Lab1_NUCLEO_L496.dir/Core/Src/sounds.c.obj	7eb5e6067da205bd
+97	734	8136381225113666	CMakeFiles/Lab1_NUCLEO_L496.dir/Core/Src/stm32l4xx_hal_msp.c.obj	c72e2f50363e0893
+56	783	8136381224726513	CMakeFiles/Lab1_NUCLEO_L496.dir/Core/Src/mpu9250.c.obj	3acafbb88a8cc828
+189	878	8136381226059223	CMakeFiles/Lab1_NUCLEO_L496.dir/Core/Src/pet_flash.c.obj	11747006e52431ea
+200	928	8136381226151439	cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Core/Src/system_stm32l4xx.c.obj	b526fd33a17b48da
+212	929	8136381226224727	cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c.obj	3868c6fc58c34012
+235	969	8136381226520043	cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c.obj	1a0e1f319b0cda2d
+293	996	8136381227097462	cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash.c.obj	513d775e2d325865
+325	1002	8136381227417412	cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ramfunc.c.obj	7570818d9174490a
+314	1018	8136381227287994	cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ex.c.obj	fa2db9afb23034b9
+249	1039	8136381226642022	cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c.obj	561184e3294eb08e
+40	394	8136381892039110	CMakeFiles/Lab1_NUCLEO_L496.dir/Core/Src/sprite.c.obj	b03ec3cedb7e9ff4
+18	565	8136381891817010	CMakeFiles/Lab1_NUCLEO_L496.dir/Core/Src/menu.c.obj	aa6a1f9a3c4de276
+30	578	8136381891939275	CMakeFiles/Lab1_NUCLEO_L496.dir/Core/Src/character.c.obj	3d995ce37af57b12
+7	758	8136381891682055	CMakeFiles/Lab1_NUCLEO_L496.dir/Core/Src/main.c.obj	56700eb6bfa2b0fa
+94	768	8136381892574196	cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c.obj	dd3fb87db708f3ef
+57	777	8136381892201560	CMakeFiles/Lab1_NUCLEO_L496.dir/Core/Src/i2c.c.obj	22f3d98c2bf80b4f
+87	780	8136381892494288	CMakeFiles/Lab1_NUCLEO_L496.dir/Core/Src/catch_stars.c.obj	58e54f6c07c48f4d
+112	782	8136381892726448	cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c.obj	922b6e9dea57b140
+48	783	8136381892079235	CMakeFiles/Lab1_NUCLEO_L496.dir/Core/Src/graphics_controller.c.obj	d88d719df81aea26
+75	868	8136381892386895	CMakeFiles/Lab1_NUCLEO_L496.dir/Core/Src/pet_stats.c.obj	e44a5d939a862f00
+127	892	8136381892910854	cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.c.obj	dcc0cbeb85481325
+146	898	8136381893098487	cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma_ex.c.obj	a2292cf2395d5ae7
+182	930	8136381893452281	cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c.obj	b5e8764909d02f64
+165	932	8136381893272053	cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr.c.obj	bd37f2c9fca453bf
+204	955	8136381893685379	cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c.obj	4651d5ed6548dbf7
+227	970	8136381893909060	cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c.obj	30d3a98625f18fda
+294	987	8136381894580352	cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi_ex.c.obj	237070e5b625a521
+104	1000	8136381892660253	cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c.obj	1521b538deff19a3
+273	1004	8136381894367193	cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c.obj	6c72498014baf789
+255	1063	8136381894153946	cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c.obj	23c5c09fdb00de67
+283	1075	8136381894472376	cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi.c.obj	1ed8db79856bf587
+366	1089	8136381895300272	cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c.obj	72f49195b71efde8
+322	1202	8136381894855301	cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c.obj	948aa8fb9a0b29e9
+13	383	8136382489955512	CMakeFiles/Lab1_NUCLEO_L496.dir/Core/Src/menu.c.obj	aa6a1f9a3c4de276
+22	412	8136382490049473	CMakeFiles/Lab1_NUCLEO_L496.dir/Core/Src/character.c.obj	3d995ce37af57b12
+67	448	8136382490499301	CMakeFiles/Lab1_NUCLEO_L496.dir/Core/Src/catch_stars.c.obj	58e54f6c07c48f4d
+44	450	8136382490268216	CMakeFiles/Lab1_NUCLEO_L496.dir/Core/Src/i2c.c.obj	22f3d98c2bf80b4f
+34	470	8136382490157783	CMakeFiles/Lab1_NUCLEO_L496.dir/Core/Src/graphics_controller.c.obj	d88d719df81aea26
+4	473	8136382489855601	CMakeFiles/Lab1_NUCLEO_L496.dir/Core/Src/main.c.obj	56700eb6bfa2b0fa
+59	490	8136382490419327	CMakeFiles/Lab1_NUCLEO_L496.dir/Core/Src/pet_stats.c.obj	e44a5d939a862f00
+51	501	8136382490313090	CMakeFiles/Lab1_NUCLEO_L496.dir/Drivers/BSP/GFX01M2/ili9341.c.obj	f4d4390ce3a0aed3
+501	822	8136382494826822	Lab1_NUCLEO_L496.elf	eb378731cf0d44a2

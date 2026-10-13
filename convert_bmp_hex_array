@@ -1,0 +1,67 @@
+from PIL import Image
+import os
+import sys
+
+def image_to_2d_hex_array(image_path):
+    # 1. Open the image and ensure it's in RGB mode
+    img = Image.open(image_path).convert('RGB')
+    width, height = img.size
+    
+    hex_matrix = []
+    
+    # 2. Iterate through each row and column (2D)
+    for y in range(height):
+        row = []
+        for x in range(width):
+            r, g, b = img.getpixel((x, y))
+            
+            # 3. Convert 24-bit RGB (8-8-8) to 16-bit RGB565 (5-6-5 bits = 2 bytes)
+            # Red: 5 bits, Green: 6 bits, Blue: 5 bits
+            rgb565 = ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3)
+            
+            # 4. Format as a 2-byte (4-character) Hex string (e.g., 0xFFFF)
+            hex_str = f"0x{rgb565:04X}"
+            row.append(hex_str)
+            
+        hex_matrix.append(row)
+        
+    return hex_matrix
+
+def print_c_style_array(hex_matrix):
+    """Optional utility to print the matrix in a clean C-style array format."""
+    result = ""
+
+    result += "const unsigned short image_array[][%d] = {" % len(hex_matrix[0])
+    result += "\n"
+
+    for row in hex_matrix:
+        result += "    {" + ", ".join(row) + "},\n"
+
+    result += "};"
+
+    return result
+
+
+if __name__ == "__main__":
+    # Usage: python3 convert_bmp_hex_array "/path/to/image.bmp"
+
+    arguments = sys.argv[1:]
+
+    try:
+        img_path = arguments[0]
+    except Exception as e:
+        # print(e)
+        print("Usage: python3 convert_bmp_hex_array \"/path/to/image.bmp\"")
+        exit()
+
+    if os.path.exists(img_path):
+        hex_array = image_to_2d_hex_array(img_path)
+        # print(hex_array)
+
+        basename = os.path.basename(img_path)
+        c_file_path = f"{basename}.c"
+        with open(c_file_path, "w") as f:
+            f.write(print_c_style_array(hex_array))
+            f.close()
+        
+    print(f"Converted Image: {c_file_path}")

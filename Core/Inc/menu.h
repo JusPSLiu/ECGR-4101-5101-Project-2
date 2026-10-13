@@ -1,6 +1,9 @@
 #ifndef MENU_H
 #define MENU_H
 
-void drawMenu(int menu_state);
+#include "ili9341.h"
+// #include "character.h"
+
+uint8_t drawMenu(int menuState);
 
 #endif
