@@ -4,6 +4,6 @@
 #include "ili9341.h"
 // #include "character.h"
 
-uint8_t drawMenu(uint8_t menuState);
+uint8_t drawMenu(int menuState);
 
 #endif

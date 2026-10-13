@@ -28,6 +28,7 @@ void drawMenuBackground();
 
 // SPRITE GRAPHICS
 void drawSprite();
+void drawCatchStarsCatcher(uint16_t x, uint16_t y);
 void drawHudBackground();
 void updateHudDisplay(uint8_t, uint8_t);
 

@@ -37,6 +37,8 @@
 #include <stdio.h>
 #include "menu.h"
 #include "character.h"
+#include "graphics_controller.h"
+#include "catch_stars.h"
 #include "pet_stats.h"
 
 /* Private variables ---------------------------------------------------------*/
@@ -48,10 +50,11 @@ static void MX_GPIO_Init(void);
 static void MX_SPI1_Init(void);
 
 static uint8_t Joystick_Read(void);
+static uint8_t updateCatchStars(uint8_t joy);
 
 /* UTILITIES */
 void readInputs(uint8_t);
-void performAction();
+void performAction(int selection);
 
 /* utils */
 uint8_t clamp(uint8_t, uint8_t, uint8_t);
@@ -86,6 +89,7 @@ uint32_t last_frame_time = 0;
 
 uint8_t screen_refresh = 1;
 uint8_t input_debounce = 0;
+static uint8_t center_release_required;
 
 /**
  * @brief  The application entry point.
@@ -112,8 +116,13 @@ int main(void) {
   // main loop
   while (1) {
     uint32_t now = HAL_GetTick();
+    uint8_t joy = Joystick_Read();
 
-    readInputs(Joystick_Read());
+    if (updateCatchStars(joy)) continue;
+
+    readInputs(joy);
+
+    if (updateCatchStars(joy)) continue;
 
         // stats drain with real time - even while the menu is open
     updateStats(now);
@@ -157,7 +166,24 @@ int main(void) {
   }
 }
 
+static uint8_t updateCatchStars(uint8_t joy) {
+  if (!catchStarsIsActive()) return 0;
+
+  catchStarsUpdate((joy & JOY_LEFT_MASK) != 0,
+                   (joy & JOY_RIGHT_MASK) != 0,
+                   (joy & JOY_CENTER_MASK) != 0);
+  if (!catchStarsIsActive()) {
+    center_release_required = 1;
+    screen_refresh = 1;
+  }
+  return 1;
+}
+
 void readInputs(uint8_t joy) {
+  if (center_release_required && !(joy & JOY_CENTER_MASK)) {
+    center_release_required = 0;
+  }
+
   if (input_debounce > 0) input_debounce--;
   else {
     // LR
@@ -168,7 +194,7 @@ void readInputs(uint8_t joy) {
     }
 
     // CLICK
-    if (joy & JOY_CENTER_MASK) {
+    if ((joy & JOY_CENTER_MASK) && !center_release_required) {
       if (isMenuOpen == 0) isMenuOpen = 1;
       else {
         isMenuOpen = 0;
@@ -196,14 +222,30 @@ void readInputs(uint8_t joy) {
   }
 }
 
-void performAction() {
-  switch(menuState) {
-    case 0: feed(); break;
-    case 1: play(); break;
-    case 2: break;
-    case 3: break;
-  }
+
+void performAction(int selection) {
+    switch (selection) {
+        case 0:
+            feed();
+            break;
+
+        case 1:
+            play();
+            break;
+
+        case 2:
+            dance();
+            break;
+
+        case 3:
+            catchStarsStart();
+            break;
+
+        default:
+            break;
+    }
 }
+
 
 static uint8_t Joystick_Read(void) {
   uint8_t state = 0;

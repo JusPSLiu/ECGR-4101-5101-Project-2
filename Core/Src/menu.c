@@ -1,21 +1,21 @@
 #include "menu.h"
 
-uint8_t drawMenu(uint8_t menuState) {
+uint8_t drawMenu(int menuState) {
   char *menuoptions[] = {
     "  FEED  ",
     "  PLAY  ",
-    "  SOME  ",
-    " THING  "};
+    "  DANCE  ",
+    "  STARS  "};
   char *selectedoptions[] = {
     "> FEED <",
     "> PLAY <",
-    "> SOME <",
-    ">THING <"};
+    "> DANCE <",
+    "> STARS <"};
   uint8_t num_options = 4;
   
   // wraparound
-  menuState %= num_options;
-  if (menuState < 0) menuState = num_options-1;
+  if (menuState < 0) menuState = num_options - 1;
+  else menuState %= num_options;
 
   // draw
   uint8_t y_pos = 0;
