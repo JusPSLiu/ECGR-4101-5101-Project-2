@@ -33,7 +33,7 @@ static void drawSpaceBackground(void)
 {
     ILI9341_FillScreen(ILI9341_COLOR_BLACK);
 
-    /* Small distant stars */
+    /* background distant stars */
     ILI9341_DrawHLine(18, 75, 2, ILI9341_COLOR_WHITE);
     ILI9341_DrawHLine(65, 92, 2, ILI9341_COLOR_WHITE);
     ILI9341_DrawHLine(205, 82, 2, ILI9341_COLOR_WHITE);
@@ -47,7 +47,7 @@ static void drawSpaceBackground(void)
     ILI9341_DrawHLine(105, 275, 2, ILI9341_COLOR_WHITE);
     ILI9341_DrawHLine(200, 285, 2, ILI9341_COLOR_WHITE);
 
-    /* Brighter stars */
+    /* stars for points */
     ILI9341_DrawHLine(110, 85, 3, ILI9341_COLOR_CYAN);
     ILI9341_DrawHLine(175, 135, 3, ILI9341_COLOR_PINK);
     ILI9341_DrawHLine(20, 200, 3, ILI9341_COLOR_CYAN);

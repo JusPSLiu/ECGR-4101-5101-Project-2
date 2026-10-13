@@ -89,7 +89,7 @@ restart_draw:
         case anim_sad_loop:
             anim = sad_anim; animlen = sad_anim_len;
             break;
-        case anim_dance:
+        case anim_dance: /* dance loop */
             anim = floss_anim; animlen = floss_anim_len;
             break;
         case anim_dead_loop:
@@ -119,6 +119,7 @@ restart_draw:
     }
 }
 
+/* catch the stars image */
 void drawCatchStarsCatcher(uint16_t x, uint16_t y) {
     ILI9341_DrawImageScaledFast(x, y, 20, 26, (const unsigned short *)idle_1, 2);
 }

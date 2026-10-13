@@ -5,15 +5,13 @@ uint8_t drawMenu(int menuState) {
     "  FEED  ",
     "  PLAY  ",
     "  DANCE  ",
-    "  THING  ",
     "  STARS  "};
   char *selectedoptions[] = {
     "> FEED <",
     "> PLAY <",
     "> DANCE <",
-    "> THING <",
     "> STARS <"};
-  uint8_t num_options = 5;
+  uint8_t num_options = 4;
   
   // wraparound
   if (menuState < 0) menuState = num_options - 1;
