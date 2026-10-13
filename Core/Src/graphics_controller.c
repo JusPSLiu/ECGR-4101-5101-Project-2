@@ -42,6 +42,18 @@ restart_draw:
         case anim_dance:
             anim = floss_anim; animlen = floss_anim_len;
             break;
+        case anim_fall_asleep:
+            anim = fall_asleep_anim; animlen = fall_asleep_anim_len;
+            break;
+        case anim_sleep_loop:
+            anim = sleep_anim; animlen = sleep_anim_len;
+            break;
+        case anim_leave:
+            anim = leave_anim; animlen = leave_anim_len;
+            break;
+        case anim_left_loop:
+            anim = left_anim; animlen = left_anim_len;
+            break;
         case anim_dead_loop:
         default:
             anim = dead_anim; animlen = dead_anim_len;
@@ -58,10 +70,10 @@ restart_draw:
         }
     }
 
-    ILI9341_DrawImageScaled(SPRITEX, SPRITEY, 20, 26, (const unsigned short *)anim[frame_count],
-        20, 160, 208, 0, 0xFFFF);
-    //ILI9341_DrawImageScaledFast(SPRITEX, SPRITEY, 20, 26, (const unsigned short *)anim[frame_count],
-    //    8);
+    //ILI9341_DrawImageScaled(SPRITEX, SPRITEY, 20, 26, (const unsigned short *)anim[frame_count],
+    //    20, 160, 208, 0, 0xFFFF);
+    ILI9341_DrawImageScaledFast(SPRITEX, SPRITEY, 20, 26, (const unsigned short *)anim[frame_count],
+        8);
 }
 
 void triggerAnim(enum anims newanim) {
