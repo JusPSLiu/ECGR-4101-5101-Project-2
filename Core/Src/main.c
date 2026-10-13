@@ -216,10 +216,6 @@ void performAction(int selection) {
             break;
 
         case 3:
-
-            break;
-
-        case 4:
             catchStarsStart();
             break;
 
