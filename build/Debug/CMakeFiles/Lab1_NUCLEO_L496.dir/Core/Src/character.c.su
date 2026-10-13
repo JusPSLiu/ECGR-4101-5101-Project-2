@@ -1,0 +1,7 @@
+C:/Users/jusps/Documents/ClassThings/ECGR 5101/project2/Core/Src/character.c:16:6:characterLogic	8	static
+C:/Users/jusps/Documents/ClassThings/ECGR 5101/project2/Core/Src/character.c:21:6:updateHappy	8	static
+C:/Users/jusps/Documents/ClassThings/ECGR 5101/project2/Core/Src/character.c:32:6:updateBattery	8	static
+C:/Users/jusps/Documents/ClassThings/ECGR 5101/project2/Core/Src/character.c:44:6:feed	8	static
+C:/Users/jusps/Documents/ClassThings/ECGR 5101/project2/Core/Src/character.c:49:6:play	8	static
+C:/Users/jusps/Documents/ClassThings/ECGR 5101/project2/Core/Src/character.c:57:6:updateAnimState	8	static
+C:/Users/jusps/Documents/ClassThings/ECGR 5101/project2/Core/Src/character.c:75:6:updateHud	8	static
