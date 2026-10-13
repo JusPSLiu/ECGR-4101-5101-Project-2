@@ -11,7 +11,7 @@
 #include <stdint.h>
 
 #define GFX_FONT5X7_FIRST_CHAR  0x20U /* ' ' */
-#define GFX_FONT5X7_LAST_CHAR   0x5AU /* 'Z' */
+#define GFX_FONT5X7_LAST_CHAR   0x7AU /* 'z' */ // Changed to include lowercase letters
 #define GFX_FONT5X7_WIDTH       5U
 #define GFX_FONT5X7_HEIGHT      7U
 

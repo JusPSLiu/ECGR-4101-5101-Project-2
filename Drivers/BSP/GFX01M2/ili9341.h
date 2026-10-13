@@ -50,6 +50,6 @@ void ILI9341_DrawString(uint16_t x, uint16_t y, const char *str, uint16_t color,
 
 // User Added
 void ILI9341_DrawImage(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const unsigned short *img, uint16_t src_stride);
-// void ILI9341_DrawImageScaled(uint16_t x, uint16_t y, uint16_t src_w, uint16_t src_h, const unsigned short *img, uint16_t src_stride, uint16_t dst_w, uint16_t dst_h);
-void ILI9341_DrawImageScaled(uint16_t x, uint16_t y, uint16_t src_w, uint16_t src_h, const unsigned short *img, uint16_t src_stride, uint16_t dst_w, uint16_t dst_h, float degrees, uint16_t bg_color);
+void ILI9341_DrawImageScaled(uint16_t x, uint16_t y, uint16_t src_w, uint16_t src_h, const unsigned short *img, uint16_t src_stride, uint16_t dst_w, uint16_t dst_h);
+// void ILI9341_DrawImageScaled(uint16_t x, uint16_t y, uint16_t src_w, uint16_t src_h, const unsigned short *img, uint16_t src_stride, uint16_t dst_w, uint16_t dst_h, float degrees, uint16_t bg_color);
 #endif /* ILI9341_H */
