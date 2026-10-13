@@ -29,11 +29,11 @@ typedef struct {
     int16_t ax;
     int16_t ay;
     int16_t az;
-} MPU9250AccelerometerData;
+} MPU9250AccelerometerData_t;
 
 void MX_I2C1_Init(void);
 uint8_t I2C_Scan(uint8_t *found, uint8_t max_found);
-MPU9250AccelerometerData readMPU9250();
+MPU9250AccelerometerData_t readMPU9250();
 HAL_StatusTypeDef MPU9250_WakeUp(void);
 
 void readMPU9250Test();

@@ -121,6 +121,331 @@ const uint16_t note_dur_ms[NOTE_LENGTH] = {
     88,   88,   88,   88,   88,   88,   88,   88
 };
 
+#define MELODY_LENGTH 16
+
+static const uint16_t melody_freq[MELODY_LENGTH] = {
+    440, 523, 659, 523,
+    392, 494, 587, 494,
+    349, 440, 523, 440,
+    392, 349, 330, 294
+};
+
+static const uint16_t melody_dur_ms[MELODY_LENGTH] = {
+    220, 180, 260, 180,
+    220, 180, 300, 180,
+    220, 180, 260, 180,
+    220, 220, 300, 450
+}; // Total 3750ms
+
+#define TRAINER_LENGTH 16
+
+static const uint16_t trainer_freq[TRAINER_LENGTH] = {
+    440, 587, 784, 659,
+    523, 698, 880, 784,
+    622, 831, 1047, 932,
+    784, 1047, 1319, 1568
+};
+
+static const uint16_t trainer_dur_ms[TRAINER_LENGTH] = {
+    70, 70, 100, 70,
+    70, 70, 100, 70,
+    70, 70, 100, 70,
+    100, 100, 140, 250
+}; // Total 1420ms
+
+#define CATCH_LENGTH 12
+
+static const uint16_t catch_freq[CATCH_LENGTH] = {
+    523, 659, 784, 1047, 988, 1047,
+    1319, 1175, 1319, 1568, 1760, 2093
+};
+
+static const uint16_t catch_dur_ms[CATCH_LENGTH] = {
+    80, 80, 100, 140, 80, 100,
+    100, 80, 100, 140, 160, 300
+}; // Total 1460ms
+
+#define HYPE_LENGTH 32
+
+static const uint16_t hype_freq[HYPE_LENGTH] = {
+    880, 1047, 1319, 1568, 1319, 1047, 1568, 1760,
+    1568, 1319, 1047, 1319, 1760, 2093, 1760, 1568,
+    1319, 1568, 2093, 2349, 2093, 1760, 1568, 1760,
+    2093, 2637, 2349, 2093, 1760, 2093, 2637, 3136
+};
+
+static const uint16_t hype_dur_ms[HYPE_LENGTH] = {
+    60, 60, 60, 100, 60, 60, 60, 100,
+    60, 60, 60, 100, 60, 60, 60, 100,
+    60, 60, 60, 100, 60, 60, 60, 100,
+    60, 60, 60, 100, 60, 60, 100, 180
+}; // Total 2200ms
+
+
+#define POKE_BATTLE_THEME_LENGTH 84
+
+static const uint16_t poke_battle_theme_freqs[POKE_BATTLE_THEME_LENGTH] = {
+    523, 493, 466, 440, 466, 440, 415, 391, 415, 391, 
+    369, 349, 369, 349, 329, 311, 329, 311, 293, 
+    277, 293, 277, 261, 246, 261, 246, 233, 220,
+    233, 246, 261, 277, 391, 329, 391, 311, 391, 
+    277, 391, 329, 391, 311, 391, 277, 369, 391, 
+    329, 391, 311, 391, 277, 391, 329, 391, 311, 
+    391, 277, 369, 391, 369, 329, 391, 440, 391, 
+    830, 783, 830, 783, 1108, 523, 466, 415, 554, 
+    523, 466, 698, 659, 587, 466, 523, 587, 698, 
+    830, 783
+};
+
+static const uint16_t poke_battle_theme_durations[POKE_BATTLE_THEME_LENGTH] = {
+    82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 
+    82, 82, 82, 82, 82, 82, 82, 82, 82, 
+    82, 82, 82, 82, 82, 82, 82, 82, 82, 
+    82, 82, 82, 82, 165, 165, 331, 165, 
+    331, 165, 331, 165, 331, 165, 331, 662, 
+    662, 331, 165, 331, 165, 331, 165, 331, 
+    165, 331, 165, 331, 662, 662, 497, 497, 
+    331, 497, 497, 331, 994, 165, 165, 165, 
+    828, 497, 497, 331, 497, 497, 331, 497, 
+    497, 331, 331, 331, 331, 331, 2651, 2651
+};
+
+#define POKE_HEAL_LENGTH 10
+
+static const uint16_t poke_heal_freqs[POKE_HEAL_LENGTH] = {
+    493.88, 164.81, 493.88, 164.81, 493.88, 164.81, 415.3, 207.65, 659.26, 164.81
+};
+
+static const uint16_t poke_heal_durations[POKE_HEAL_LENGTH] = {
+    483, 483, 483, 483, 241, 241, 241, 241, 483, 483
+};
+
+// Total number of notes and rests in this sequence
+#define MARIO_THEME_LENGTH 41
+
+static const uint16_t mario_frequencies[MARIO_THEME_LENGTH] = {
+    659, 659, 0, 659, 0, 523, 659, 0, 784, 0, 392, 0,
+    523, 0, 0, 392, 0, 0, 330, 0, 0, 440, 0, 494, 0, 
+    466, 440, 0, 392, 659, 784, 880, 0, 698, 784, 0, 
+    659, 0, 523, 587, 494
+};
+
+static const uint16_t mario_durations[MARIO_THEME_LENGTH] = {
+    150, 150, 150, 150, 150, 150, 150, 150, 150, 450, 150, 300,
+    150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 
+    150, 150, 150, 113, 113, 113, 150, 150, 150, 150, 150, 150, 150, 
+    150, 150, 300
+};
+
+#define WAKA_LENGTH 16
+
+static const uint16_t WAKA_FREQUENCIES[] = {
+    440, 880, 440, 880, 440, 880, 440, 880,
+    440, 880, 440, 880, 440, 880, 440, 880
+};
+
+static const uint16_t WAKA_DURATIONS[] = {
+    60,  60,  60,  60,  60,  60,  60,  60,
+    60,  60,  60,  60,  60,  60,  60,  60
+};
+
+#define PACMAN_THEME_LENGTH 29
+
+const uint16_t PACMAN_THEME_FREQUENCIES[] = {
+    494, 988, 740, 622, 988, 740, 622,  
+    523, 1047, 784, 659, 1047, 784, 659, 
+    494, 988, 740, 622, 988, 740, 622, 
+    622, 659, 698, 740, 784, 831, 880, 988 
+};
+
+const uint16_t PACMAN_THEME_DURATIONS[] = {
+    115, 115, 115, 115, 115, 115, 230,
+    115, 115, 115, 115, 115, 115, 230,
+    115, 115, 115, 115, 115, 115, 230,
+    57,  57,  57,  57,  57,  57,  57,  115
+};
+
+#define EAT_SOUND_LENGTH 21
+
+const uint16_t eat_frequencies[EAT_SOUND_LENGTH] = {
+    201, 178, 156, 134, 112,  90,   0,  // Chomp 1
+    164, 144, 125, 105,  86,  66,   0,  // Chomp 2
+    210, 185, 160, 135, 110,  85,   0   // Chomp 3
+};
+
+// Note durations in milliseconds
+const uint16_t eat_durations[EAT_SOUND_LENGTH] = {
+     30,  30,  30,  30,  30,  30,  40,  // Chomp 1
+     30,  30,  30,  30,  30,  30,  40,  // Chomp 2
+     30,  30,  30,  30,  30,  30,  40   // Chomp 3
+};
+
+#define REJUVENATED_LENGTH 20
+
+static const uint16_t REJUVENATED_MELODY_FREQ[] = {
+    262, 330, 392, 523, 0,   // C4, E4, G4, C5 arpeggio + short rest
+    392, 523, 659, 784, 0,   // G4, C5, E5, G5 arpeggio + short rest
+    523, 587, 659, 698,      // C5, D5, E5, F5 fast climb
+    784, 0,   880, 0,        // G5 + rest, A5 + rest
+    988, 1047                          // B5, C6 triumphant peak
+};
+
+static const uint16_t REJUVENATED_MELODY_DUR[] = {
+    75,  75,  75,  150, 50,  // Fast introductory arpeggio
+    75,  75,  75,  150, 50,  // Higher octave burst
+    100, 100, 100, 100,      // Steady driving climb
+    150, 50,  150, 50,       // Punchy syncopated rhythm
+    200, 500                           // Final sustained resolution
+};
+
+#define VON_LENGTH 16
+
+static const uint16_t VON_FREQ[VON_LENGTH] = {
+    494, 784, 740, 494, 523, 659, 659, 523, 
+    494, 784, 740, 494, 523, 740, 659, 523   
+};
+
+// Durations in milliseconds at ~150 BPM (Quarter note = 400ms, Eighth note = 200ms)
+static const uint16_t VON_DUR[VON_LENGTH] = {
+    200, 200, 200, 200, 200, 200, 200, 200,  
+    200, 200, 200, 200, 200, 200, 200, 200   
+};
+
+// Total notes in the sound effect sequence
+#define MGS_ALERT_NOTE_COUNT 6
+
+// Frequencies in Hz for each step of the arpeggio/punch
+static const uint16_t MGS_ALERT_FREQ[MGS_ALERT_NOTE_COUNT] = {
+    554,  // C#5 - Rapid ascending arpeggio start
+    659,  // E5
+    784,  // G5
+    932,  // Bb5
+    1109, // C#6 - Highest sharp exclamation note (Staccato accent)
+    1109  // C#6 - Quick decay/release note
+};
+
+// Durations in milliseconds for each note
+static const uint16_t MGS_ALERT_DURATION[MGS_ALERT_NOTE_COUNT] = {
+    35,   // Extremely rapid slide up
+    35,   // Rapid slide up
+    35,   // Rapid slide up
+    35,   // Rapid slide up
+    200,  // Main piercing exclamation note accent
+    100   // Quick fade/release
+};
+
+// Number of notes/rests in the sequence
+#define ENTERTAINER_LENGTH 45
+
+// Frequencies in Hz (0 indicates a rest/silence)
+static const uint16_t entertainerFrequencies[ENTERTAINER_LENGTH] = {
+    988, 1047, 1109, 1760, 1109, 1760, 1109, 1760, 0, 1976, 
+    2093, 2217, 1760, 1976, 2217, 1661, 1976, 1760, 0, 988, 
+    1047, 1109, 1760, 1109, 1760, 1109, 1760, 0, 1480, 1661, 
+    1760, 1976, 2217, 1760, 1976, 2217, 0, 988, 1047, 1109, 
+    1760, 1109, 1760, 1109, 1760
+};
+
+// Durations in milliseconds
+static const uint16_t entertainerDurations[ENTERTAINER_LENGTH] = {
+    130, 130, 130, 260, 130, 260, 130, 520, 130, 130, 
+    130, 130, 130, 130, 260, 130, 260, 520, 260, 130, 
+    130, 130, 260, 130, 260, 130, 520, 130, 130, 130, 
+    130, 130, 260, 130, 260, 520, 130, 130, 130, 130, 
+    260, 130, 260, 130, 520
+};
+
+// Array size for loops
+#define JUMP_SOUND_LENGTH 10
+
+// Frequencies in Hertz (Hz) - sweeping rapidly upward
+static const uint16_t JUMP_FREQUENCIES[JUMP_SOUND_LENGTH] = {
+    150, 222, 294, 366, 438, 511, 583, 655, 727, 800
+};
+
+// Note durations in milliseconds (ms) - fast 25ms bursts per step
+static const uint16_t  JUMP_DURATIONS[JUMP_SOUND_LENGTH] = {
+    25,  25,  25,  25,  25,  25,  25,  25,  25,  25
+};
+
+#include <stdint.h>
+
+// Total notes in the repeating main melody loop
+#define LUCID_DREAMS_LENGTH 25
+
+// Frequencies in Hz (0 represents a rest/silence)
+static const uint16_t lucid_dreams_freqs[LUCID_DREAMS_LENGTH] = {
+    880,  // A5
+    740,  // F#5
+    880,  // A5
+    831,  // G#5
+    659,  // E5
+    831,  // G#5
+    740,  // F#5
+    587,  // D5
+    740,  // F#5
+    698,  // F5
+    587,  // D5
+    0,    // Rest
+    
+    // Part 2 (Ascending/variation response)
+    587,  // D5
+    740,  // F#5
+    880,  // A5
+    587,  // D5
+    554,  // C#5
+    494,  // B4
+    440,  // A4
+    415,  // G#4
+    370,  // F#4
+    370,  // F#4
+    0,    // Rest
+    740,  // F#5 quick turnaround accent
+    0     // Rest
+};
+
+// Durations in milliseconds (Scaled for standard 84 BPM 8-bit tracking)
+static const uint16_t lucid_dreams_durations[LUCID_DREAMS_LENGTH] = {
+    250,  // A5
+    250,  // F#5
+    250,  // A5
+    250,  // G#5
+    250,  // E5
+    250,  // G#5
+    250,  // F#5
+    250,  // D5
+    250,  // F#5
+    250,  // F5
+    500,  // D5 (held longer)
+    250,  // Rest
+    
+    250,  // D5
+    250,  // F#5
+    250,  // A5
+    250,  // D5
+    250,  // C#5
+    250,  // B4
+    250,  // A4
+    250,  // G#4
+    250,  // F#4
+    500,  // F#4 (held longer)
+    125,  // Rest
+    125,  // F#5 (staccato accent bounce)
+    500   // End Rest before loop repeat
+};
+
+#define GAMEOVER_SOUND_LENGTH 4
+
+// Frequencies in Hz (Descending: C5 -> B4 -> G4 -> E4)
+static const uint16_t  GAMEOVER_FREQUENCIES[GAMEOVER_SOUND_LENGTH] = {
+    523, 494, 392, 330
+};
+
+// Durations in milliseconds (Dragging notes that slow down)
+static const uint16_t  GAMEOVER_DURATIONS[GAMEOVER_SOUND_LENGTH] = {
+    150, 150, 150, 400
+};
+
 #define TEST_LENGTH 1
 
 const uint16_t test_freq[] = {440};
@@ -261,9 +586,7 @@ HAL_StatusTypeDef Sound_Init(void)
     return HAL_OK;
 }
  
-bool Play_Tune(const uint16_t *frequencies,
-               const uint16_t *durations_ms,
-               uint16_t        length)
+bool Play_Tune(const uint16_t *frequencies, const uint16_t *durations_ms, uint16_t length)
 {
     if ((frequencies == NULL) || (durations_ms == NULL) || (length == 0U)) {
         return false;
@@ -326,287 +649,46 @@ bool Sound_IsPlaying(void)
     return s_active;
 }
 
+// Play Functions
 void PlayNokiaRingtone() {
     Sound_SetTempo(75);
     Play_Tune(nokia_freq, nokia_dur_ms, NOKIA_LENGTH); 
 }
 
-#define MELODY_LENGTH 16
+void PlayPokemonTheme() {
+    Play_Tune(poke_battle_theme_freqs, poke_battle_theme_durations, POKE_BATTLE_THEME_LENGTH); 
+}
 
-static const uint16_t melody_freq[MELODY_LENGTH] = {
-    440, 523, 659, 523,
-    392, 494, 587, 494,
-    349, 440, 523, 440,
-    392, 349, 330, 294
-};
+void PlayAlert() {
+    Play_Tune(alert_freq, alert_dur_ms, ALERT_LENGTH); 
+}
 
-static const uint16_t melody_dur_ms[MELODY_LENGTH] = {
-    220, 180, 260, 180,
-    220, 180, 300, 180,
-    220, 180, 260, 180,
-    220, 220, 300, 450
-}; // Total 3750ms
+void PlayEatingSound() {
+    Play_Tune(eat_frequencies, eat_durations, EAT_SOUND_LENGTH); 
+}
 
-#define TRAINER_LENGTH 16
+void PlayJump() {
+    Play_Tune(JUMP_FREQUENCIES, JUMP_DURATIONS, JUMP_SOUND_LENGTH); 
+}
 
-static const uint16_t trainer_freq[TRAINER_LENGTH] = {
-    440, 587, 784, 659,
-    523, 698, 880, 784,
-    622, 831, 1047, 932,
-    784, 1047, 1319, 1568
-};
-
-static const uint16_t trainer_dur_ms[TRAINER_LENGTH] = {
-    70, 70, 100, 70,
-    70, 70, 100, 70,
-    70, 70, 100, 70,
-    100, 100, 140, 250
-}; // Total 1420ms
-
-#define CATCH_LENGTH 12
-
-static const uint16_t catch_freq[CATCH_LENGTH] = {
-    523, 659, 784, 1047, 988, 1047,
-    1319, 1175, 1319, 1568, 1760, 2093
-};
-
-static const uint16_t catch_dur_ms[CATCH_LENGTH] = {
-    80, 80, 100, 140, 80, 100,
-    100, 80, 100, 140, 160, 300
-}; // Total 1460ms
-
-#define HYPE_LENGTH 32
-
-static const uint16_t hype_freq[HYPE_LENGTH] = {
-    880, 1047, 1319, 1568, 1319, 1047, 1568, 1760,
-    1568, 1319, 1047, 1319, 1760, 2093, 1760, 1568,
-    1319, 1568, 2093, 2349, 2093, 1760, 1568, 1760,
-    2093, 2637, 2349, 2093, 1760, 2093, 2637, 3136
-};
-
-static const uint16_t hype_dur_ms[HYPE_LENGTH] = {
-    60, 60, 60, 100, 60, 60, 60, 100,
-    60, 60, 60, 100, 60, 60, 60, 100,
-    60, 60, 60, 100, 60, 60, 60, 100,
-    60, 60, 60, 100, 60, 60, 100, 180
-}; // Total 2200ms
-
-
-#define POKE_BATTLE_THEME_LENGTH 84
-
-static const uint16_t poke_battle_theme_freqs[POKE_BATTLE_THEME_LENGTH] = {
-    523, 493, 466, 440, 466, 440, 415, 391, 415, 391, 369, 349, 369, 349, 329, 311, 329, 311, 293, 277, 293, 277, 261, 246, 261, 246, 233, 220, 233, 246, 261, 277, 391, 329, 391, 311, 391, 277, 391, 329, 391, 311, 391, 277, 369, 391, 329, 391, 311, 391, 277, 391, 329, 391, 311, 391, 277, 369, 391, 369, 329, 391, 440, 391, 830, 783, 830, 783, 1108, 523, 466, 415, 554, 523, 466, 698, 659, 587, 466, 523, 587, 698, 830, 783
-};
-
-static const uint16_t poke_battle_theme_durations[POKE_BATTLE_THEME_LENGTH] = {
-    82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 82, 165, 165, 331, 165, 331, 165, 331, 165, 331, 165, 331, 662, 662, 331, 165, 331, 165, 331, 165, 331, 165, 331, 165, 331, 662, 662, 497, 497, 331, 497, 497, 331, 994, 165, 165, 165, 828, 497, 497, 331, 497, 497, 331, 497, 497, 331, 331, 331, 331, 331, 2651, 2651
-};
-
-#define POKE_HEAL_LENGTH 10
-
-static const uint16_t poke_heal_freqs[POKE_HEAL_LENGTH] = {
-    493.88, 164.81, 493.88, 164.81, 493.88, 164.81, 415.3, 207.65, 659.26, 164.81
-};
-
-static const uint16_t poke_heal_durations[POKE_HEAL_LENGTH] = {
-    483, 483, 483, 483, 241, 241, 241, 241, 483, 483
-};
-
-// #define MELODY_LENGTH 40
-
-// static const uint16_t melody_freqs[40] = {
-//     246.94, 392.0, 369.99, 82.41, 246.94, 261.63, 369.99, 369.99, 329.63, 65.41, 246.94, 392.0, 369.99, 82.41, 246.94, 261.63, 369.99, 329.63, 261.63, 65.41, 246.94, 392.0, 369.99, 82.41, 246.94, 261.63, 261.63, 329.63, 261.63, 65.41, 246.94, 392.0, 369.99, 82.41, 246.94, 261.63, 369.99, 329.63, 261.63, 65.41
-// };
-
-// static const uint16_t melody_durations[40] = {
-//     375, 375, 375, 1125, 375, 375, 375, 375, 375, 1875, 375, 375, 375, 1125, 375, 375, 375, 375, 375, 1875, 375, 375, 375, 1125, 375, 375, 375, 375, 375, 1875, 375, 375, 375, 1125, 375, 375, 375, 375, 375, 1875
-// };
-
-// Total number of notes and rests in this sequence
-#define MARIO_THEME_LENGTH 41
-
-// Frequencies in Hz (0 represents a musical rest)
-static const uint16_t mario_frequencies[MARIO_THEME_LENGTH] = {
-    // Intro
-    659, 659, 0, 659, 0, 523, 659, 0, 784, 0, 392, 0,
-    // Main Melody Phrase
-    523, 0, 0, 392, 0, 0, 330, 0, 0, 440, 0, 494, 0, 
-    466, 440, 0, 392, 659, 784, 880, 0, 698, 784, 0, 
-    659, 0, 523, 587, 494
-};
-
-// Durations in milliseconds (corresponds directly to the frequencies above)
-static const uint16_t mario_durations[MARIO_THEME_LENGTH] = {
-    // Intro durations
-    150, 150, 150, 150, 150, 150, 150, 150, 150, 450, 150, 300,
-    // Main Melody Phrase durations
-    150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 
-    150, 150, 150, 113, 113, 113, 150, 150, 150, 150, 150, 150, 150, 
-    150, 150, 300
-};
-
-
-#define WAKA_LENGTH 16
-// Frequencies in Hz for the "Waka Waka" chattering sound
-static const uint16_t WAKA_FREQUENCIES[] = {
-    440, 880, 440, 880, 440, 880, 440, 880,
-    440, 880, 440, 880, 440, 880, 440, 880
-};
-
-// Durations in milliseconds for each alternation
-static const uint16_t WAKA_DURATIONS[] = {
-    60,  60,  60,  60,  60,  60,  60,  60,
-    60,  60,  60,  60,  60,  60,  60,  60
-};
-
-
-#define PACMAN_THEME_LENGTH 29
-// Frequencies in Hz for the Pac-Man Intro Theme
-const uint16_t PACMAN_THEME_FREQUENCIES[] = {
-    494, 988, 740, 622, 988, 740, 622,  // B4, B5, F#5, D#5, B5, F#5, D#5
-    523, 1047, 784, 659, 1047, 784, 659, // C5, C6, G5, E5, C6, G5, E5
-    494, 988, 740, 622, 988, 740, 622,  // B4, B5, F#5, D#5, B5, F#5, D#5
-    622, 659, 698, 740, 784, 831, 880, 988 // D#5, E5, F5, F#5, G5, G#5, A5, B5
-};
-
-// Durations in milliseconds for each note
-const uint16_t PACMAN_THEME_DURATIONS[] = {
-    115, 115, 115, 115, 115, 115, 230,
-    115, 115, 115, 115, 115, 115, 230,
-    115, 115, 115, 115, 115, 115, 230,
-    57,  57,  57,  57,  57,  57,  57,  115
-};
-
-// The total number of elements in the sound array
-#define EAT_SOUND_LENGTH 21
-
-// Frequencies in Hz (0 represents a pause/silence)
-const uint16_t eat_frequencies[EAT_SOUND_LENGTH] = {
-    201, 178, 156, 134, 112,  90,   0,  // Chomp 1
-    164, 144, 125, 105,  86,  66,   0,  // Chomp 2
-    210, 185, 160, 135, 110,  85,   0   // Chomp 3
-};
-
-// Note durations in milliseconds
-const uint16_t eat_durations[EAT_SOUND_LENGTH] = {
-     30,  30,  30,  30,  30,  30,  40,  // Chomp 1
-     30,  30,  30,  30,  30,  30,  40,  // Chomp 2
-     30,  30,  30,  30,  30,  30,  40   // Chomp 3
-};
-
-#define REJUVENATED_LENGTH 20
-
-const uint16_t REJUVENATED_MELODY_FREQ[] = {
-    262, 330, 392, 523, 0,   // C4, E4, G4, C5 arpeggio + short rest
-    392, 523, 659, 784, 0,   // G4, C5, E5, G5 arpeggio + short rest
-    523, 587, 659, 698,      // C5, D5, E5, F5 fast climb
-    784, 0,   880, 0,        // G5 + rest, A5 + rest
-    988, 1047                // B5, C6 triumphant peak
-};
-
-// Duration of notes in milliseconds
-const uint16_t REJUVENATED_MELODY_DUR[] = {
-    75,  75,  75,  150, 50,  // Fast introductory arpeggio
-    75,  75,  75,  150, 50,  // Higher octave burst
-    100, 100, 100, 100,      // Steady driving climb
-    150, 50,  150, 50,       // Punchy syncopated rhythm
-    200, 500                 // Final sustained resolution
-};
-
-#define VON_LENGTH 16
-static const uint16_t VON_FREQ[VON_LENGTH] = {
-    // Phrase 1
-    494,  // B4
-    784,  // G5
-    740,  // F#5
-    494,  // B4
-    523,  // C5
-    659,  // E5
-    659,  // E5
-    523,  // C5
-
-    // Phrase 2
-    494,  // B4
-    784,  // G5
-    740,  // F#5
-    494,  // B4
-    523,  // C5
-    740,  // F#5
-    659,  // E5
-    523   // C5
-};
-
-// Durations in milliseconds at ~150 BPM (Quarter note = 400ms, Eighth note = 200ms)
-static const uint16_t VON_DUR[VON_LENGTH] = {
-    // Phrase 1
-    200,  // Eighth note
-    200,  // Eighth note
-    200,  // Eighth note
-    200,  // Eighth note
-    200,  // Eighth note
-    200,  // Eighth note
-    200,  // Eighth note
-    200,  // Eighth note
-
-    // Phrase 2
-    200,  // Eighth note
-    200,  // Eighth note
-    200,  // Eighth note
-    200,  // Eighth note
-    200,  // Eighth note
-    200,  // Eighth note
-    200,  // Eighth note
-    200   // Eighth note
-};
-
-// Total notes in the sound effect sequence
-#define MGS_ALERT_NOTE_COUNT 6
-
-// Frequencies in Hz for each step of the arpeggio/punch
-static const uint16_t MGS_ALERT_FREQ[MGS_ALERT_NOTE_COUNT] = {
-    554,  // C#5 - Rapid ascending arpeggio start
-    659,  // E5
-    784,  // G5
-    932,  // Bb5
-    1109, // C#6 - Highest sharp exclamation note (Staccato accent)
-    1109  // C#6 - Quick decay/release note
-};
-
-// Durations in milliseconds for each note
-static const uint16_t MGS_ALERT_DURATION[MGS_ALERT_NOTE_COUNT] = {
-    35,   // Extremely rapid slide up
-    35,   // Rapid slide up
-    35,   // Rapid slide up
-    35,   // Rapid slide up
-    200,  // Main piercing exclamation note accent
-    100   // Quick fade/release
-};
-
-// Number of notes/rests in the sequence
-#define ENTERTAINER_LENGTH 45
-
-// Frequencies in Hz (0 indicates a rest/silence)
-const uint16_t entertainerFrequencies[] = {
-    988, 1047, 1109, 1760, 1109, 1760, 1109, 1760, 0, 1976, 
-    2093, 2217, 1760, 1976, 2217, 1661, 1976, 1760, 0, 988, 
-    1047, 1109, 1760, 1109, 1760, 1109, 1760, 0, 1480, 1661, 
-    1760, 1976, 2217, 1760, 1976, 2217, 0, 988, 1047, 1109, 
-    1760, 1109, 1760, 1109, 1760
-};
-
-// Durations in milliseconds
-const uint16_t entertainerDurations[] = {
-    130, 130, 130, 260, 130, 260, 130, 520, 130, 130, 
-    130, 130, 130, 130, 260, 130, 260, 520, 260, 130, 
-    130, 130, 260, 130, 260, 130, 520, 130, 130, 130, 
-    130, 130, 260, 130, 260, 520, 130, 130, 130, 130, 
-    260, 130, 260, 130, 520
-};
-
-void PlayPokemonSuccess() {
+void PlayVon() {
     Sound_SetTempo(50);
-    Play_Tune(entertainerFrequencies, entertainerDurations, ENTERTAINER_LENGTH); 
+    Play_Tune(VON_FREQ, VON_DUR, VON_LENGTH); 
+}
+
+void PlayRejuvenated() {
+    Play_Tune(REJUVENATED_MELODY_FREQ, REJUVENATED_MELODY_DUR, REJUVENATED_LENGTH); 
+}
+
+void PlayLucidDreams() {
+    Sound_SetTempo(75);
+    Play_Tune(lucid_dreams_freqs, lucid_dreams_durations, LUCID_DREAMS_LENGTH); 
+}
+
+void PlayGameOver() {
+    Play_Tune(GAMEOVER_FREQUENCIES, GAMEOVER_DURATIONS, GAMEOVER_SOUND_LENGTH); 
 }
 
 // Notes: Sound_Play() returns true or false to play again
 // to play a sound again ex: PlayNokiaRingtone(), just call it again and leave Sound_Play in while(1)
+// Sound_Play() needs to be in while(1) all the time

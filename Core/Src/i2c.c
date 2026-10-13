@@ -1,4 +1,5 @@
 #include "i2c.h"
+#include "stm32l4xx_hal_def.h"
 
 
 I2C_HandleTypeDef hi2c1;
@@ -104,24 +105,33 @@ volatile uint8_t last_nack_addr;
 
 // }
 
-MPU9250AccelerometerData readMPU9250() {
+MPU9250AccelerometerData_t readMPU9250() {
   uint8_t data_buffer[6];
 
   HAL_StatusTypeDef status;
 
-  status = HAL_I2C_Mem_Read(&hi2c1, (MPU9250_DEVICE_ADDR << 1), MPU9250_1ST_ADDR_BYTE, I2C_MEMADD_SIZE_8BIT, data_buffer, 6, HAL_MAX_DELAY);
+  status = HAL_I2C_Mem_Read(&hi2c1, 
+                            (MPU9250_DEVICE_ADDR << 1), 
+                            MPU9250_1ST_ADDR_BYTE, 
+                            I2C_MEMADD_SIZE_8BIT, 
+                            data_buffer, 6, HAL_MAX_DELAY);
+
+  if (status != HAL_OK) {
+    MPU9250AccelerometerData_t accel_data = {0, 0, 0};
+    return accel_data;
+  }
 
   int16_t axis_x = (int16_t)((data_buffer[0] << 8) | data_buffer[1]);
   int16_t axis_y = (int16_t)((data_buffer[2] << 8) | data_buffer[3]);
   int16_t axis_z = (int16_t)((data_buffer[4] << 8) | data_buffer[5]);
 
-  MPU9250AccelerometerData accel_data = {axis_x, axis_y, axis_z};
+  MPU9250AccelerometerData_t accel_data = {axis_x, axis_y, axis_z};
 
   return accel_data;
 }
 
 void readMPUTest9250() {
-    MPU9250AccelerometerData data = readMPU9250();
+    MPU9250AccelerometerData_t data = readMPU9250();
 
     while(1) {
       char x[12]; // Large enough to hold any 32-bit integer (-2147483648 to 2147483647) plus '\0'
@@ -147,7 +157,7 @@ void readMPUTest9250() {
   //     // Error handling: Toggle an LED or print an error if communication fails
   //     printf("Failed to wake up MPU-9250!\r\n");
   // }
-  
+
 HAL_StatusTypeDef MPU9250_WakeUp(void) {
     uint8_t data = MPU9250_WAKE_UP_VAL;
     

@@ -1,13 +1,16 @@
 
 #include "mpu9250.h"
+#include <iso646.h>
 
 
 // float grav = 0;
 
-int lastSign = 0;
-int reversals = 0;
-unsigned long windowStart = 0;
-float gravity = 0.0f;  
+static int lastSign = 0;
+static int reversals = 0;
+static unsigned long windowStart = 0;
+static float gravity = 0.0f;  
+
+BackFlipState_t backFlipState = NOT_FLIPPING;
 
 int detectSingleAxisShake(float delta) {
   unsigned long now = HAL_GetTick();
@@ -41,12 +44,12 @@ float getDelta(float axisData) {
 void MPU9250_Power_Init() {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
 
-  HAL_GPIO_WritePin(IMU_PWR_Port, IMU_PWR_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(MPU9250_PWR_Port, MPU9250_PWR_Pin, GPIO_PIN_SET);
 
-  GPIO_InitStruct.Pin   = IMU_PWR_Pin;
+  GPIO_InitStruct.Pin   = MPU9250_PWR_Pin;
   GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;        // or OUTPUT_OD with an external pull-up
   GPIO_InitStruct.Pull  = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 
-  HAL_GPIO_Init(IMU_PWR_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(MPU9250_PWR_Port, &GPIO_InitStruct);
 }

@@ -118,10 +118,6 @@ void Error_Handler(void);
 #define LD2_Pin GPIO_PIN_7
 #define LD2_GPIO_Port GPIOB
 
-// IMU_POWER_PIN
-#define IMU_PWR_Pin GPIO_PIN_12
-#define IMU_PWR_Port GPIOG
-
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

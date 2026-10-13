@@ -97,6 +97,9 @@
 #define SOUND_GPIO_PORT            GPIOA
 #define SOUND_GPIO_PIN             GPIO_PIN_0
 #define SOUND_GPIO_CLK_ENABLE()    __HAL_RCC_GPIOA_CLK_ENABLE()
+/* Allowed tempo range (percent). Values outside are clamped. */
+#define SOUND_TEMPO_MIN   10U
+#define SOUND_TEMPO_MAX   1000U
 #endif
 
 HAL_StatusTypeDef Sound_Init(void);
@@ -132,10 +135,6 @@ bool Play_Tune(const uint16_t *frequencies,
  */
 bool Sound_Play(void);
  
-/* Allowed tempo range (percent). Values outside are clamped. */
-#define SOUND_TEMPO_MIN   10U
-#define SOUND_TEMPO_MAX   1000U
- 
 /**
  * @brief  Set the playback speed as a percentage of the written durations.
  *         100 = normal, 50 = half speed (notes twice as long), 200 = double
@@ -157,8 +156,15 @@ void Sound_Stop(void);
  */
 bool Sound_IsPlaying(void);
 
-void PlayPokemonSuccess();
 void PlayNokiaRingtone();
+void PlayPokemonTheme();
+void PlayAlert();
+void PlayEatingSound();
+void PlayJump();
+void PlayVon();
+void PlayRejuvenated();
+void PlayLucidDreams();
+void PlayGameOver();
 
 // void Sound_SetTempo(uint16_t percent);
 

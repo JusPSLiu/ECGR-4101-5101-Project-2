@@ -93,7 +93,7 @@ int total_frames = 4;
 uint32_t last_frame_time = 0;
 uint32_t ud_frame_time = 0;
 
-#define ANIMATION_DELAY ((1 / 60) * 1000)
+#define ANIMATION_DELAY (int16_t)((1 / 2) * 1000)
 int dobf = 0;
 /**
  * @brief  The application entry point.
@@ -110,40 +110,44 @@ int main(void) {
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_SPI1_Init();
-  MX_I2C1_Init();
-  Sound_Init();
-  MPU9250_Power_Init();
-  HAL_StatusTypeDef MPU9250_WakeUp();
 
 
   /* Initialize the LCD and show a splash screen */
   ILI9341_Init(&hspi1);
 
+  // added inits
+  MX_I2C1_Init();
+  Sound_Init();
+  MPU9250_Power_Init();
+  HAL_StatusTypeDef MPU9250_WakeUp();
+
   /* Clear Screen on Start */
   ILI9341_FillScreen(ILI9341_COLOR_WHITE);
-  
-  PlayPokemonSuccess();
 
   while (1) {
     uint32_t now = HAL_GetTick();
-    MPU9250AccelerometerData data = readMPU9250();
-    float delta = getDelta(data.ay);
+    MPU9250AccelerometerData_t mpu9250Data = readMPU9250();
+    float delta = getDelta(mpu9250Data.ay);
     dobf = detectSingleAxisShake(delta);
+
+    if (dobf) {
+      frame_count = 0;
+      backFlipState = FLIPPING;
+      PlayJump();
+    }
 
     if (now - last_frame_time >= ANIMATION_DELAY) {
         last_frame_time = now;
         frame_count = (frame_count + 1) % total_frames;
 
-        if (dobf) {
-          frame_count = 0;
-
-          for (int i = 0; i < backflip_anim_len; i++) {
-              ILI9341_DrawImageScaled(40, 56, 20, 26, (const unsigned short *)backflip_anim[i], 20, 160, 208);
-                        
-            HAL_Delay(16);
-
+        if (backFlipState == FLIPPING) {
+          ILI9341_DrawImageScaled(40, 56, 20, 26, (const unsigned short *)backflip_anim[frame_count % backflip_anim_len], 20, 160, 208);
+          
+          if (frame_count %  backflip_anim_len == backflip_anim_len - 2) {
+            backFlipState = NOT_FLIPPING;
+            frame_count = 0;
           }
-          dobf = 0;
+        
         } 
         else {
           ILI9341_DrawImageScaled(40, 56, 20, 26, (const unsigned short *)idle_anim[frame_count % 4], 20, 160, 208);
@@ -151,7 +155,6 @@ int main(void) {
       }
 
     bool x = Sound_Play();
-
   }
 }
 
