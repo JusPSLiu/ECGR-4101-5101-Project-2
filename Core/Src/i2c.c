@@ -97,6 +97,13 @@ volatile uint8_t last_nack_addr;
 //     return (count < max_found) ? count : max_found;
 // }
 
+// void scanDevices() {
+//   uint8_t devices[16];
+//   int device_size = sizeof(devices);
+//   uint8_t n = I2C_Scan(&hi2c1, devices, device_size);
+
+// }
+
 MPU9250AccelerometerData readMPU9250() {
   uint8_t data_buffer[6];
 
@@ -104,20 +111,9 @@ MPU9250AccelerometerData readMPU9250() {
 
   status = HAL_I2C_Mem_Read(&hi2c1, (MPU9250_DEVICE_ADDR << 1), MPU9250_1ST_ADDR_BYTE, I2C_MEMADD_SIZE_8BIT, data_buffer, 6, HAL_MAX_DELAY);
 
-  int16_t accel_x_h = data_buffer[0];
-  int16_t accel_x_l = data_buffer[1];
-
-  int16_t axis_x = (int16_t)(accel_x_h << 8) | accel_x_l;
-
-  int16_t accel_y_h = data_buffer[2];
-  int16_t accel_y_l = data_buffer[3];
-
-  int16_t axis_y = (int16_t)(accel_y_h << 8) | accel_y_l;
-
-  int16_t accel_z_h = data_buffer[4];
-  int16_t accel_z_l = data_buffer[5];
-
-  int16_t axis_z = (int16_t)(accel_z_h << 8) | accel_z_l;
+  int16_t axis_x = (int16_t)((data_buffer[0] << 8) | data_buffer[1]);
+  int16_t axis_y = (int16_t)((data_buffer[2] << 8) | data_buffer[3]);
+  int16_t axis_z = (int16_t)((data_buffer[4] << 8) | data_buffer[5]);
 
   MPU9250AccelerometerData accel_data = {axis_x, axis_y, axis_z};
 
@@ -128,20 +124,40 @@ void readMPUTest9250() {
     MPU9250AccelerometerData data = readMPU9250();
 
     while(1) {
-        char x[12]; // Large enough to hold any 32-bit integer (-2147483648 to 2147483647) plus '\0'
-        char y[12];
-        char z[12]; 
+      char x[12]; // Large enough to hold any 32-bit integer (-2147483648 to 2147483647) plus '\0'
+      char y[12];
+      char z[12]; 
 
-        snprintf(x, sizeof(x), "x: %d", data.ax);
-        snprintf(y, sizeof(y), "y: %d", data.ay);
-        snprintf(z, sizeof(z), "z: %d", data.az);
+      snprintf(x, sizeof(x), "x: %d", data.ax);
+      snprintf(y, sizeof(y), "y: %d", data.ay);
+      snprintf(z, sizeof(z), "z: %d", data.az);
 
-    ILI9341_DrawString(0 , 7 * (0 * 2) + (5 * 0), "              ", ILI9341_COLOR_BLUE, ILI9341_COLOR_WHITE, 2);
-    ILI9341_DrawString(0 , 7 * (1 * 2) + (5 * 1), "              ", ILI9341_COLOR_BLUE, ILI9341_COLOR_WHITE, 2);
-    ILI9341_DrawString(0 , 7 * (2 * 2) + (5 * 2), "              ", ILI9341_COLOR_BLUE, ILI9341_COLOR_WHITE, 2);
+      ILI9341_DrawString(0 , 7 * (0 * 2) + (5 * 0), "              ", ILI9341_COLOR_BLUE, ILI9341_COLOR_WHITE, 2);
+      ILI9341_DrawString(0 , 7 * (1 * 2) + (5 * 1), "              ", ILI9341_COLOR_BLUE, ILI9341_COLOR_WHITE, 2);
+      ILI9341_DrawString(0 , 7 * (2 * 2) + (5 * 2), "              ", ILI9341_COLOR_BLUE, ILI9341_COLOR_WHITE, 2);
 
-    ILI9341_DrawString(0 , 7 * (0 * 2) + (5 * 0), x, ILI9341_COLOR_BLUE, ILI9341_COLOR_WHITE, 2);
-    ILI9341_DrawString(0 , 7 * (1 * 2) + (5 * 1), y, ILI9341_COLOR_BLUE, ILI9341_COLOR_WHITE, 2);
-    ILI9341_DrawString(0 , 7 * (2 * 2) + (5 * 2), z, ILI9341_COLOR_BLUE, ILI9341_COLOR_WHITE, 2);
+      ILI9341_DrawString(0 , 7 * (0 * 2) + (5 * 0), x, ILI9341_COLOR_BLUE, ILI9341_COLOR_WHITE, 2);
+      ILI9341_DrawString(0 , 7 * (1 * 2) + (5 * 1), y, ILI9341_COLOR_BLUE, ILI9341_COLOR_WHITE, 2);
+      ILI9341_DrawString(0 , 7 * (2 * 2) + (5 * 2), z, ILI9341_COLOR_BLUE, ILI9341_COLOR_WHITE, 2);
     }
+}
+
+// USE:
+  // if (MPU9250_WakeUp() != HAL_OK) {
+  //     // Error handling: Toggle an LED or print an error if communication fails
+  //     printf("Failed to wake up MPU-9250!\r\n");
+  // }
+  
+HAL_StatusTypeDef MPU9250_WakeUp(void) {
+    uint8_t data = MPU9250_WAKE_UP_VAL;
+    
+    // Shift device address left by 1 because HAL expects a 7-bit address shifted for the R/W bit
+    HAL_StatusTypeDef status = HAL_I2C_Mem_Write(&hi2c1, 
+                                                 (MPU9250_DEVICE_ADDR << 1), 
+                                                 MPU9250_PWR_MGMT_1_REG, 
+                                                 I2C_MEMADD_SIZE_8BIT, 
+                                                 &data, 
+                                                 1, 
+                                                 HAL_MAX_DELAY);
+    return status;
 }

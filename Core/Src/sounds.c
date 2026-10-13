@@ -582,9 +582,30 @@ static const uint16_t MGS_ALERT_DURATION[MGS_ALERT_NOTE_COUNT] = {
     100   // Quick fade/release
 };
 
+// Number of notes/rests in the sequence
+#define ENTERTAINER_LENGTH 45
+
+// Frequencies in Hz (0 indicates a rest/silence)
+const uint16_t entertainerFrequencies[] = {
+    988, 1047, 1109, 1760, 1109, 1760, 1109, 1760, 0, 1976, 
+    2093, 2217, 1760, 1976, 2217, 1661, 1976, 1760, 0, 988, 
+    1047, 1109, 1760, 1109, 1760, 1109, 1760, 0, 1480, 1661, 
+    1760, 1976, 2217, 1760, 1976, 2217, 0, 988, 1047, 1109, 
+    1760, 1109, 1760, 1109, 1760
+};
+
+// Durations in milliseconds
+const uint16_t entertainerDurations[] = {
+    130, 130, 130, 260, 130, 260, 130, 520, 130, 130, 
+    130, 130, 130, 130, 260, 130, 260, 520, 260, 130, 
+    130, 130, 260, 130, 260, 130, 520, 130, 130, 130, 
+    130, 130, 260, 130, 260, 520, 130, 130, 130, 130, 
+    260, 130, 260, 130, 520
+};
+
 void PlayPokemonSuccess() {
     Sound_SetTempo(50);
-    Play_Tune(VON_FREQ, VON_DUR, VON_LENGTH); 
+    Play_Tune(entertainerFrequencies, entertainerDurations, ENTERTAINER_LENGTH); 
 }
 
 // Notes: Sound_Play() returns true or false to play again

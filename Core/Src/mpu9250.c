@@ -7,6 +7,7 @@
 int lastSign = 0;
 int reversals = 0;
 unsigned long windowStart = 0;
+float gravity = 0.0f;  
 
 int detectSingleAxisShake(float delta) {
   unsigned long now = HAL_GetTick();
@@ -23,16 +24,15 @@ int detectSingleAxisShake(float delta) {
     lastSign = sign;
   }
 
-  if (reversals >= REVERSALS_NEEDED) { reversals = 0; lastSign = 0; windowStart = 0; return 1; }
+  if (reversals >= REVERSALS_NEEDED) { reversals = 0; lastSign = 0; windowStart = now; return 1; }
   return 0;
 }
 
-float getDelta(int16_t axisData) {
-  float gravity = 0;                         // separate state for Y; don't share with gravX
-
+float getDelta(float axisData) {
+  float axisDataG = axisData / G;
 // ay_g = raw Y accel in g (raw_ay / 16384.0)
-  gravity = ALPHA * gravity + (1.0 - ALPHA) * axisData;
-  float deltaData = axisData - gravity;             // motion on Y only, gravity removed
+  gravity = ALPHA * gravity + (1.0 - ALPHA) * axisDataG;
+  float deltaData = axisDataG - gravity;             // motion on Y only, gravity removed
 
   return deltaData;
 }
