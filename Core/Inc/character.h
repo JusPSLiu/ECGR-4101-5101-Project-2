@@ -7,6 +7,7 @@
 // ACTIONS
 void feed();
 void play();
+void dance();
 
 // MUTATORS
    void updateStats(uint32_t now);   /* call every loop pass with HAL_GetTick() */

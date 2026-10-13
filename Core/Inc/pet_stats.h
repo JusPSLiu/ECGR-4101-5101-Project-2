@@ -38,8 +38,11 @@
 
 /* Action effects  */
 #define FEED_AMOUNT           20U    /* feeding raises hunger by this much           */
-#define PLAY_AMOUNT           15U    /* playing raises happiness by this much        */
+#define PLAY_AMOUNT           2U    /* playing raises happiness by this much        */
 
+#define PLAY_HUNGER_COST      1U     /* backflip burns a little energy: hunger -1     */
+#define DANCE_HAPPY_AMOUNT    10U    /* dancing raises happiness by this much        */
+#define DANCE_HUNGER_COST     5U     /* ...but burns energy: hunger drops by this much */
 /* Thresholds */
 #define LOW_STAT_THRESHOLD    25U    /* at or below this, the stat counts as "low"   */
 
@@ -47,8 +50,8 @@
 typedef enum {
   PET_ALIVE    = 0,   /* normal play                         */
   PET_DEAD     = 1,   /* hunger hit STAT_MIN                 */
-  PET_RAN_AWAY = 2    /* happiness hit STAT_MIN              */
-} PetState_t;
+  PET_RAN_AWAY = 2,   /* happiness hit STAT_MIN              */
+  PET_IN_GAME  = 3    /* mini game running: stats frozen     */} PetState_t;
 
 /* Everything about the pet that must survive a power-off, in one struct.
    This RAM copy is what the code reads and changes; PetStats_SaveNow()
@@ -70,6 +73,9 @@ void    PetStats_Update(uint32_t now_ms);
 /* Actions that change the stats */
 void    PetStats_Feed(void);                   /* hunger    += FEED_AMOUNT            */
 void    PetStats_Play(void);                   /* happiness += PLAY_AMOUNT            */
+void    PetStats_Dance(void);                  /* happiness += 10, hunger -= 5        */
+void    PetStats_StartGame(void);              /* mini game starts: freeze the stats  */
+void    PetStats_EndGame(void);                /* mini game ends: both refill to 100  */
 void    PetStats_AddHunger(int16_t delta);     /* general: any +/- change to hunger   */
 void    PetStats_AddHappiness(int16_t delta);  /* general: any +/- change to happiness*/
 

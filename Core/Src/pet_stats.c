@@ -118,6 +118,11 @@ void PetStats_Update(uint32_t now_ms) {
       last_happy_tick += HAPPY_DECAY_MS;
       pet.happiness = clamp_stat((int16_t)pet.happiness - (int16_t)HAPPY_DECAY_AMOUNT);
     }
+  } else {
+    /* frozen (dead, ran away, or in the mini game): keep the timers at "now"
+       so the stats don't suddenly catch up all at once when play resumes */
+    last_hunger_tick = now_ms;
+    last_happy_tick  = now_ms;
   }
 
   /* autosave to flash every SAVE_INTERVAL_MS (only writes if something changed) */
@@ -143,6 +148,32 @@ void PetStats_Feed(void) {
 
 void PetStats_Play(void) {
   PetStats_AddHappiness((int16_t)PLAY_AMOUNT);          /* playing cheers it up       */
+  PetStats_AddHunger(-(int16_t)PLAY_HUNGER_COST);       /* a backflip burns a little energy */
+}
+
+void PetStats_Dance(void) {
+  PetStats_AddHappiness((int16_t)DANCE_HAPPY_AMOUNT);   /* dancing is fun...          */
+  PetStats_AddHunger(-(int16_t)DANCE_HUNGER_COST);      /* ...but makes the pet hungry */
+}
+
+/**
+ * @brief  Mini game starts: switch to PET_IN_GAME. PetStats_Update() only drains
+ *         the stats while the pet is PET_ALIVE, so they stay frozen during the game.
+ */
+void PetStats_StartGame(void) {
+  if (pet.state != PET_ALIVE) return;                   /* only a living pet can play */
+  pet.state = PET_IN_GAME;
+}
+
+/**
+ * @brief  Mini game ends: refill both stats to the max and go back to normal.
+ */
+void PetStats_EndGame(void) {
+  if (pet.state != PET_IN_GAME) return;                 /* no game running            */
+  pet.hunger    = STAT_MAX;                             /* reward: full hunger...     */
+  pet.happiness = STAT_MAX;                             /* ...and full happiness      */
+  pet.state     = PET_ALIVE;
+  PetStats_SaveNow();                                   /* rare event: save right away */
 }
 
 /* Read-only  */

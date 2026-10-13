@@ -46,6 +46,12 @@ void play() {
     updateAnimState();
     triggerAnim(anim_backflip);
 }
+void dance() {
+    if (pet.state != PET_ALIVE) return;        /* a dead / runaway pet can't dance */
+    PetStats_Dance();                          /* happiness += 10, hunger -= 5, clamped */
+    updateAnimState();
+    triggerAnim(anim_dance);
+}
 
 //  hardcoding this hierarchy of priority for the underlying loop animation
 void updateAnimState() {
