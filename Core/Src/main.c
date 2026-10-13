@@ -34,12 +34,18 @@
 #include "main.h"
 #include "gfx01m2_conf.h"
 #include "ili9341.h"
+#include <stdint.h>
 #include <stdio.h>
 #include "menu.h"
 #include "character.h"
 #include "graphics_controller.h"
 #include "catch_stars.h"
 #include "pet_stats.h"
+#include "i2c.h"
+#include "stm32l4xx_hal.h"
+#include <math.h>
+#include "mpu9250.h"
+#include "sounds.h"
 
 /* Private variables ---------------------------------------------------------*/
 SPI_HandleTypeDef hspi1;
