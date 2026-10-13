@@ -2,7 +2,6 @@
 #include "pet_stats.h"   /* hunger/happiness values, decay timer, clamping */
 
 
-static uint8_t is_dancing;
 /* Last values seen by updateStats() -so the animation state is only
    re-checked when a stat actually changes (not on every loop pass). */
 static uint8_t last_hunger    = STAT_MAX + 1;   /* impossible value forces the first check */
@@ -37,25 +36,20 @@ void updateStats(uint32_t now) {
 }
 
 void feed() {
-    is_dancing = 0;
-    if (pet.state != PET_ALIVE) return;        /* a dead / runaway pet can't eat */
-    PetStats_Feed();                           /* hunger += FEED_AMOUNT, clamped */
+    if (pet.state != PET_ALIVE) return;
+    PetStats_Feed();
     updateAnimState();
     triggerAnim(anim_eat);
 }
 void play() {
-    is_dancing = 0;
-    if (pet.state != PET_ALIVE) return;        /* a dead / runaway pet can't play */
-    PetStats_Play();                           /* happiness += PLAY_AMOUNT, clamped */
+    if (pet.state != PET_ALIVE) return;
+    PetStats_Play();
     updateAnimState();
     triggerAnim(anim_backflip);
 }
 void dance() {
     if (pet.state != PET_ALIVE) return;
-
-    is_dancing = 1;
-    PetStats_Dance();                          /* happiness += 10, hunger -= 5, clamped */
-    setLoop(anim_dance);
+    PetStats_Dance();
     updateAnimState();
     triggerAnim(anim_dance);
 }
@@ -63,13 +57,9 @@ void dance() {
 //  hardcoding this hierarchy of priority for the underlying loop animation
 void updateAnimState() {
     if (pet.state == PET_DEAD) {
-        is_dancing = 0;
         setLoop(anim_dead_loop);
     } else if (pet.state == PET_RAN_AWAY) {
-        is_dancing = 0;
-        setLoop(anim_sad_loop);                /* placeholder until the runaway screen is made */
-    } else if (is_dancing) {
-        setLoop(anim_dance);
+        setLoop(anim_left_loop);
     } else if (PetStats_GetHunger() < 25) {
         setLoop(anim_lowbatt_loop);
     } else if (PetStats_GetHappiness() < 50) {

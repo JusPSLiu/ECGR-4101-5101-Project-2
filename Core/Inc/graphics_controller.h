@@ -22,6 +22,7 @@ enum anims {
 void incrementFrameCount();
 void triggerAnim(enum anims);
 void setLoop(enum anims);
+void endAnim();
 
 // MENU BACKGROUND
 void drawMenuBackground();

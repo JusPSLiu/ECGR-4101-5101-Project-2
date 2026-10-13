@@ -3,14 +3,14 @@
 uint8_t drawMenu(int menuState) {
   char *menuoptions[] = {
     "  FEED  ",
-    "  PLAY  ",
     "  DANCE  ",
-    "  STARS  "};
+    "  STARS  ",
+    "  RESET  "};
   char *selectedoptions[] = {
     "> FEED <",
-    "> PLAY <",
     "> DANCE <",
-    "> STARS <"};
+    "> STARS <",
+    "> RESET <"};
   uint8_t num_options = 4;
   
   // wraparound

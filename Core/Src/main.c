@@ -121,7 +121,7 @@ int main(void) {
     if (updateCatchStars(joy)) continue;
 
     readInputs(joy);
-
+    
     if (updateCatchStars(joy)) continue;
 
         // stats drain with real time - even while the menu is open
@@ -136,6 +136,7 @@ int main(void) {
         PetStats_SaveNow();            // save right away (rare event - safe for flash wear)
       } else if (PetStats_IsMiserable()) {
         pet.state = PET_RAN_AWAY;      // too unhappy -> the pet runs away
+        triggerAnim(anim_leave);
         updateAnimState();
         PetStats_SaveNow();            // save right away (rare event - safe for flash wear)
       }
@@ -157,7 +158,6 @@ int main(void) {
       if (now - last_frame_time >= ANIMATION_DELAY) {
         last_frame_time = now;
         incrementFrameCount();
-
       }
 
       updateHud();
@@ -167,7 +167,10 @@ int main(void) {
 }
 
 static uint8_t updateCatchStars(uint8_t joy) {
-  if (!catchStarsIsActive()) return 0;
+  if (!catchStarsIsActive()) {
+    PetStats_EndGame();
+    return 0;
+  }
 
   catchStarsUpdate((joy & JOY_LEFT_MASK) != 0,
                    (joy & JOY_RIGHT_MASK) != 0,
@@ -224,26 +227,28 @@ void readInputs(uint8_t joy) {
 
 
 void performAction(int selection) {
-    switch (selection) {
-        case 0:
-            feed();
-            break;
+  if (pet.state == PET_DEAD) return;
+  switch (selection) {
+    case 0:
+      feed();
+      break;
 
-        case 1:
-            play();
-            break;
+    case 1:
+      dance();
+      break;
 
-        case 2:
-            dance();
-            break;
+    case 2:
+      PetStats_StartGame();
+      catchStarsStart();
+      endAnim();
+      break;
+    
+    case 3:
+      PetStats_Reset();
 
-        case 3:
-            catchStarsStart();
-            break;
-
-        default:
-            break;
-    }
+    default:
+      break;
+  }
 }
 
 

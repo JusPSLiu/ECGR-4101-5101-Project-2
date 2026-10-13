@@ -110,12 +110,12 @@ void PetStats_Update(uint32_t now_ms) {
   if (pet.state == PET_ALIVE) {
     /* unsigned subtraction handles HAL_GetTick() wrapping after ~49 days */
     if (now_ms - last_hunger_tick >= HUNGER_DECAY_MS) {
-      last_hunger_tick += HUNGER_DECAY_MS;   /* step forward by one period, keeps timing exact */
+      last_hunger_tick = now_ms;
       pet.hunger = clamp_stat((int16_t)pet.hunger - (int16_t)HUNGER_DECAY_AMOUNT);
     }
 
     if (now_ms - last_happy_tick >= HAPPY_DECAY_MS) {
-      last_happy_tick += HAPPY_DECAY_MS;
+      last_happy_tick = now_ms;
       pet.happiness = clamp_stat((int16_t)pet.happiness - (int16_t)HAPPY_DECAY_AMOUNT);
     }
   } else {

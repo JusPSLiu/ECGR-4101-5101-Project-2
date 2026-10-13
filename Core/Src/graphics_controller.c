@@ -133,7 +133,7 @@ restart_draw:
 
 /* catch the stars image */
 void drawCatchStarsCatcher(uint16_t x, uint16_t y) {
-    ILI9341_DrawImageScaledFast(x, y, 20, 26, (const unsigned short *)idle_1, 2);
+    ILI9341_DrawImageScaledFast(x, y, 20, 26, (const unsigned short *)star_eating, 2);
 }
 
 void triggerAnim(enum anims newanim) {
@@ -149,6 +149,10 @@ void setLoop(enum anims newanim) {
         frame_count = 0;
     }
     curr_loop = newanim;
+}
+void endAnim() {
+    curr_anim = curr_loop;
+    frame_count = 0;
 }
 
 

@@ -36,7 +36,7 @@
 #define PETFLASH_BANK        2U             /* the 1 MB L496 is dual bank; last page is in bank 2 */
 #define PETFLASH_PAGE_NUM    255U           /* page number inside bank 2 (0..255)        */
 #define PETFLASH_SLOTS       (PETFLASH_PAGE_SIZE / 8U)   /* 256 records per page          */
-#define PETFLASH_MAGIC       0x5045U        /* "PE" for pet                              */
+#define PETFLASH_MAGIC       0x5046U        /* "PE" for pet                              */
 
 /* Find the newest saved record - Returns 1 and fills *out if one exists,
    0 if the page is empty or holds nothing valid (first power-up). */
