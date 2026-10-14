@@ -272,7 +272,7 @@ void PetStats_DrawAlerts(uint32_t now_ms, uint8_t enabled) {
     update_one_alert(HAPPY_ALERT_X,  HAPPY_ALERT_Y,  "SAD!",    &happy_alert_shown,  want_happy);
   }
 
-    if (!Sound_IsPlaying()) {
+    if (!Sound_IsPlaying() && pet.state != PET_DEAD) {
       if (PetStats_IsHungerLow() || PetStats_IsHappinessLow()) PlayAlert();
     }  
 }
