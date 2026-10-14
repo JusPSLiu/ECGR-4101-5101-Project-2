@@ -37,5 +37,6 @@ MPU9250AccelerometerData_t readMPU9250();
 HAL_StatusTypeDef MPU9250_WakeUp(void);
 
 void readMPU9250Test();
+void MPU_Diag(void);
 
 #endif

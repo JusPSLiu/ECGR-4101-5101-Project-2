@@ -100,6 +100,9 @@
 /* Allowed tempo range (percent). Values outside are clamped. */
 #define SOUND_TEMPO_MIN   10U
 #define SOUND_TEMPO_MAX   1000U
+
+#define SOUND_VOLUME_DEFAULT    100U
+#define SOUND_RAMP_MS           15U 
 #endif
 
 HAL_StatusTypeDef Sound_Init(void);
@@ -121,9 +124,12 @@ HAL_StatusTypeDef Sound_Init(void);
  * @retval false invalid arguments (NULL pointer or length of 0); nothing
  *               is changed.
  */
-bool Play_Tune(const uint16_t *frequencies,
-               const uint16_t *durations_ms,
-               uint16_t        length);
+// bool Play_Tune(const uint16_t *frequencies,
+//                const uint16_t *durations_ms,
+//                uint16_t        length);
+
+bool Play_Tune(const uint16_t *frequencies, const uint16_t *durations_ms,
+               uint16_t length, uint8_t volume, uint16_t tempoPercent);
  
 /**
  * @brief  Non-blocking player. Call as often as possible from the main loop.
@@ -156,6 +162,7 @@ void Sound_Stop(void);
  */
 bool Sound_IsPlaying(void);
 
+void PlayDance();
 void PlayNokiaRingtone();
 void PlayPokemonTheme();
 void PlayAlert();
@@ -165,6 +172,13 @@ void PlayVon();
 void PlayRejuvenated();
 void PlayLucidDreams();
 void PlayGameOver();
+void PlayRunAway();
+void PlayNeverGonna();
+void PlayLose();
+void PlayMenuConfirm();
+void PlayMenuCycle();
+void PlayWhoosh();
+void PlayChime();
 
 // void Sound_SetTempo(uint16_t percent);
 

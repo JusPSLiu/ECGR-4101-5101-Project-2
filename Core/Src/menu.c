@@ -1,17 +1,22 @@
 #include "menu.h"
+#include "sounds.h"
 
 uint8_t drawMenu(int menuState) {
+  PlayMenuCycle();
+
   char *menuoptions[] = {
-    "  FEED  ",
-    "  DANCE  ",
-    "  STARS  ",
-    "  RESET  "};
+    "   FEED   ",
+    "   DANCE  ",
+    "   STARS  ",
+    "   RESET  ",
+    "   CLOSE  "};
   char *selectedoptions[] = {
-    "> FEED <",
-    "> DANCE <",
-    "> STARS <",
-    "> RESET <"};
-  uint8_t num_options = 4;
+    ">  FEED  <",
+    ">  DANCE <",
+    ">  STARS <",
+    ">  RESET <",
+    ">  CLOSE <"};
+  uint8_t num_options = 5;
   
   // wraparound
   if (menuState < 0) menuState = num_options - 1;
@@ -25,7 +30,8 @@ uint8_t drawMenu(int menuState) {
 
     if (menuState == i) {curr_str = selectedoptions[i]; color=ILI9341_COLOR_BLACK;}
     else {curr_str = menuoptions[i]; color=ILI9341_COLOR_PINK;}
-
+    
+    // int x = (SCREEN_WIDTH  - sizeof(menuoptions) / sizeof(menuoptions[i])) / 2;
     ILI9341_DrawString(0 , y_pos, curr_str, color, ILI9341_COLOR_WHITE, 4);
     y_pos += 33;
   }

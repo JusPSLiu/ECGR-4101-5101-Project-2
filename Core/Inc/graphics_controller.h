@@ -2,6 +2,7 @@
 #define GRAPHICS_H
 
 #include "ili9341.h"
+#include "sounds.h"
 
 enum anims {
     anim_idle_loop,

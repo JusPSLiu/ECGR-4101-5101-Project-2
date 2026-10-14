@@ -15,6 +15,7 @@
 #define GRAVITY_ALPHA 0.9f
 #define ALPHA 0.9f
 #define G 16384.0f
+#define LAST_FLIP_WINDOW 2000
 
  typedef enum {
   FLIPPING    = 0,
