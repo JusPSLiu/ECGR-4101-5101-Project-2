@@ -205,7 +205,6 @@ int main(void) {
 
       updateHud();
       characterLogic();
-      
     }
     
   }
@@ -281,6 +280,7 @@ void performAction(int selection) {
   if (selection == 3) {
     PetStats_Reset();
     PlayChime();
+    return;
   }
   
   if (pet.state == PET_DEAD || pet.state == PET_RAN_AWAY) return;
