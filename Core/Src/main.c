@@ -173,9 +173,9 @@ int main(void) {
         updateAnimState();
         PetStats_SaveNow();            // save right away (rare event - safe for flash wear)
       }
-      else if (detectSingleAxisShake(delta) && now - last_flip >= LAST_FLIP_WINDOW && pet.hunger > 0) {
-        if (pet.happiness < 100) clamp(pet.happiness += 10, 0, 100);
-        pet.hunger -= 5;
+      else if (detectSingleAxisShake(delta) && now - last_flip >= LAST_FLIP_WINDOW && pet.hunger > STAT_MIN) {
+        if (pet.happiness < STAT_MAX) clamp(pet.happiness += DANCE_HAPPY_AMOUNT, STAT_MIN, STAT_MAX);
+        pet.hunger -= DANCE_HUNGER_COST;
       
         triggerAnim(anim_backflip);
         updateAnimState();
