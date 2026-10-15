@@ -173,7 +173,7 @@ int main(void) {
         updateAnimState();
         PetStats_SaveNow();            // save right away (rare event - safe for flash wear)
       }
-      else if (detectSingleAxisShake(delta) && now - last_flip >= LAST_FLIP_WINDOW && pet.hunger > STAT_MIN) {
+      else if (detectSingleAxisShake(delta) && now - last_flip >= LAST_FLIP_WINDOW && pet.hunger > DANCE_HUNGER_COST) {
         if (pet.happiness < STAT_MAX) clamp(pet.happiness += DANCE_HAPPY_AMOUNT, STAT_MIN, STAT_MAX);
         pet.hunger -= DANCE_HUNGER_COST;
       
@@ -301,6 +301,14 @@ void performAction(int selection) {
       catchStarsStart();
       endAnim();
       break;
+
+    case 4:
+    pet.hunger = 10;
+    break;
+
+    case 5:
+    pet.happiness = 2;
+    break;
 
     default:
       PlayMenuConfirm();

@@ -4,19 +4,24 @@
 uint8_t drawMenu(int menuState) {
   PlayMenuCycle();
 
-  char *menuoptions[] = {
+  char *menuoptions[MENU_OPTIONS_COUNT] = {
     "   FEED   ",
     "   JIVE   ",
     "   STAR   ",
     "  REBOOT  ",
+    "  LOW EN  ",
+    "  LOW HA  ",
     "   EXIT   "};
-  char *selectedoptions[] = {
+  char *selectedoptions[MENU_OPTIONS_COUNT] = {
     ">  FEED  <",
     ">  JIVE  <",
     ">  STAR  <",
     "> REBOOT <",
+    "> LOW EN <",
+    "> LOW HA <",
     ">  EXIT  <"};
-  uint8_t num_options = 5;
+    
+  uint8_t num_options = MENU_OPTIONS_COUNT;
   
   // wraparound
   if (menuState < 0) menuState = num_options - 1;

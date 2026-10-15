@@ -1,5 +1,6 @@
 #include "character.h"
 #include "pet_stats.h"   /* hunger/happiness values, decay timer, clamping */
+#include "sounds.h"
 
 
 /* Last values seen by updateStats() -so the animation state is only

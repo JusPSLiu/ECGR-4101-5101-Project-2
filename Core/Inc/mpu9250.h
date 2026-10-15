@@ -9,7 +9,7 @@
 #define MPU9250_PWR_Pin GPIO_PIN_12
 #define MPU9250_PWR_Port GPIOG
 
-#define THRESH 0.4f 
+#define THRESH 0.25f 
 #define WINDOW_MS 800
 #define REVERSALS_NEEDED 4
 #define GRAVITY_ALPHA 0.9f
