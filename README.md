@@ -33,6 +33,7 @@ being shaken, it has a mini game, and it remembers its state even after the boar
 **Menu options**
 
 | Option | What it does |
+|---|---|
 | FEED | Hunger +20, eating animation and sound |
 | DANCE | Happiness +10, hunger −5, dance animation with music notes |
 | STARS | Starts the Catch the Stars mini game. Stats are frozen while playing, and both refill to 100 when it ends |
@@ -44,6 +45,7 @@ being shaken, it has a mini game, and it remembers its state even after the boar
 ## Pet rules
 
 | Rule | Value |
+|---|---|
 | Stat range | 0–100, every change is clamped |
 | Starting stats | 80 hunger / 80 happiness |
 | Hunger drain | −1 every 3 s |
@@ -70,6 +72,7 @@ Once the pet dies or runs away, its stats freeze and actions are disabled until 
 **Connections**
 
 | Device | Interface | Pins |
+|---|---|---|
 | LCD (ILI9341) | SPI1 | SCK PA5, MISO PA6, MOSI PA7, CS PA9, DC PB10, RESET PA1 |
 | Joystick | GPIO (active low) | Left PB6, Right PB0, Up PC0, Down PB4, Center PC7 |
 | MPU-9250 | I²C1 (address 0x68) | SDA PG13, SCL PG14, power enable PG12 |
@@ -81,6 +84,7 @@ Once the pet dies or runs away, its stats freeze and actions are disabled until 
 ## Project structure
 
 | File | Purpose |
+|---|---|
 | `Core/Src/main.c` | Startup, main loop, joystick input, menu actions, death / runaway polling, shake detection |
 | `Core/Src/pet_stats.c/.h` | Hunger / happiness / state (`pet` struct), time-based drain, clamping, action effects, alerts, mini game freeze/refill |
 | `Core/Src/pet_flash.c/.h` | Saves and loads the `pet` struct in the last 2 KB page of flash |
@@ -136,6 +140,7 @@ is only erased when all 256 slots are full, about once every 2 hours of play, wh
 ## Team and contributions
 
 | Member | GitHub | Contributions |
+|---|---|---|
 | Jus Liu | JusPSLiu | Animations, animation controller state machine, repository setup and integration |
 | Gregory Hagins II | creative-gregory | Design / mock-up, hardware implementation (MPU-9250 accelerometer, speaker and amplifier, sound effects) |
 | Lauren Rouse | lrouse9-stack | Catch the Stars mini game, dance option |
