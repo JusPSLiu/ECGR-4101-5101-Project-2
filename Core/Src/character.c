@@ -1,5 +1,6 @@
 #include "character.h"
 #include "pet_stats.h"   /* hunger/happiness values, decay timer, clamping */
+#include "sounds.h"
 
 
 /* Last values seen by updateStats() -so the animation state is only
@@ -71,5 +72,5 @@ void updateAnimState() {
 
 void updateHud() {
     updateHudDisplay(PetStats_GetHunger(), PetStats_GetHappiness());
-        PetStats_DrawAlerts(HAL_GetTick(), pet.state == PET_ALIVE);   /* blink low-stat alerts - hidden once dead */
+    PetStats_DrawAlerts(HAL_GetTick(), pet.state == PET_ALIVE);   /* blink low-stat alerts - hidden once dead */
 }

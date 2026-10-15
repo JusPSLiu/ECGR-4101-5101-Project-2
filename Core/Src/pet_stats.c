@@ -10,6 +10,7 @@
 #include "ili9341.h"     /* ILI9341_FillRect, ILI9341_DrawRect, ILI9341_DrawString */
 #include <stdio.h>       /* snprintf for the number labels                        */
 #include "pet_flash.h"   /* PetFlash_Load / PetFlash_Save (non-volatile storage)  */
+#include "sounds.h"
 
 /* The pet's stats: one global struct (declared extern in pet_stats.h) so the
    whole thing can be saved to / loaded from flash in one piece. */
@@ -263,11 +264,16 @@ void PetStats_DrawAlerts(uint32_t now_ms, uint8_t enabled) {
   if (now_ms - last_blink_tick >= ALERT_BLINK_MS) {
     last_blink_tick = now_ms;
     blink_on ^= 1U;
+
+    uint8_t want_hunger = enabled && blink_on && PetStats_IsHungerLow();
+    uint8_t want_happy  = enabled && blink_on && PetStats_IsHappinessLow();
+
+    update_one_alert(HUNGER_ALERT_X, HUNGER_ALERT_Y, "HUNGRY!", &hunger_alert_shown, want_hunger);
+    update_one_alert(HAPPY_ALERT_X,  HAPPY_ALERT_Y,  "SAD!",    &happy_alert_shown,  want_happy);
   }
 
-  uint8_t want_hunger = enabled && blink_on && PetStats_IsHungerLow();
-  uint8_t want_happy  = enabled && blink_on && PetStats_IsHappinessLow();
 
-  update_one_alert(HUNGER_ALERT_X, HUNGER_ALERT_Y, "HUNGRY!", &hunger_alert_shown, want_hunger);
-  update_one_alert(HAPPY_ALERT_X,  HAPPY_ALERT_Y,  "SAD!",    &happy_alert_shown,  want_happy);
+    if (!Sound_IsPlaying() && (pet.state != PET_DEAD && pet.state != PET_RAN_AWAY)) {
+      if (PetStats_IsHungerLow() || PetStats_IsHappinessLow()) PlayAlert();
+    }  
 }

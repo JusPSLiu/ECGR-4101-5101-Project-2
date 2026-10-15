@@ -1,33 +1,44 @@
 #include "menu.h"
+#include "sounds.h"
 
 uint8_t drawMenu(int menuState) {
-  char *menuoptions[] = {
-    "  FEED  ",
-    "  DANCE  ",
-    "  STARS  ",
-    "  RESET  "};
-  char *selectedoptions[] = {
-    "> FEED <",
-    "> DANCE <",
-    "> STARS <",
-    "> RESET <"};
-  uint8_t num_options = 4;
+  PlayMenuCycle();
+
+  char *menuoptions[MENU_OPTIONS_COUNT] = {
+    "   FEED   ",
+    "   JIVE   ",
+    "   STAR   ",
+    "  REBOOT  ",
+    "  LOW EN  ",
+    "  LOW HA  ",
+    "   EXIT   "};
+  char *selectedoptions[MENU_OPTIONS_COUNT] = {
+    ">  FEED  <",
+    ">  JIVE  <",
+    ">  STAR  <",
+    "> REBOOT <",
+    "> LOW EN <",
+    "> LOW HA <",
+    ">  EXIT  <"};
+    
+  uint8_t num_options = MENU_OPTIONS_COUNT;
   
   // wraparound
   if (menuState < 0) menuState = num_options - 1;
   else menuState %= num_options;
 
   // draw
-  uint8_t y_pos = 0;
+  uint8_t y_pos = (SCREEN_HEIGHT - (num_options * VERTICAL_SPACE)) / 2;
   for (int i=0;i<num_options;i++) {
     char *curr_str;
     short color;
 
-    if (menuState == i) {curr_str = selectedoptions[i]; color=ILI9341_COLOR_BLACK;}
-    else {curr_str = menuoptions[i]; color=ILI9341_COLOR_PINK;}
-
-    ILI9341_DrawString(0 , y_pos, curr_str, color, ILI9341_COLOR_WHITE, 4);
-    y_pos += 33;
+    if (menuState == i) {curr_str = selectedoptions[i]; color=ILI9341_COLOR_GREEN;}
+    else {curr_str = menuoptions[i]; color=ILI9341_COLOR_BLACK;}
+    
+    // int x = (SCREEN_WIDTH  - sizeof(menuoptions) / sizeof(menuoptions[i])) / 2;
+    ILI9341_DrawString(0 , y_pos, curr_str, color, ILI9341_COLOR_WHITE, TEXT_SIZE);
+    y_pos += VERTICAL_SPACE;
   }
 
   return menuState;

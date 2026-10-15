@@ -7,6 +7,7 @@
 
 #include "sounds.h"
 #include <stdint.h>
+#include <stdlib.h>
 
 /* ---------- Nokia tune data ---------- */
 #define NOKIA_LENGTH 13
@@ -265,19 +266,45 @@ const uint16_t PACMAN_THEME_DURATIONS[] = {
     57,  57,  57,  57,  57,  57,  57,  115
 };
 
-#define EAT_SOUND_LENGTH 21
+#define CHIME_LENGTH 4
+
+const uint16_t chime_frequencies[CHIME_LENGTH] = {
+    1047, // C6
+    1319, // E6
+    1568, // G6
+    2093,  // C7 (Final high peak)
+};
+
+const uint16_t chime_durations[CHIME_LENGTH] = {
+    40,  // Rapid upward step 1
+    40,  // Rapid upward step 2
+    40,  // Rapid upward step 3
+    300,  // Sustained clean ring out
+};
+
+#define EAT_SOUND_LENGTH 34
 
 const uint16_t eat_frequencies[EAT_SOUND_LENGTH] = {
     201, 178, 156, 134, 112,  90,   0,  // Chomp 1
     164, 144, 125, 105,  86,  66,   0,  // Chomp 2
-    210, 185, 160, 135, 110,  85,   0   // Chomp 3
+    262, 330, 392, 523, 0,   // C4, E4, G4, C5 arpeggio + short rest
+    392, 523, 659, 784, 0,   // G4, C5, E5, G5 arpeggio + short rest
+    523, 587, 659, 698,      // C5, D5, E5, F5 fast climb
+    784, 0,   880, 0,        // G5 + rest, A5 + rest
+    988, 1047        
+    // 210, 185, 160, 135, 110,  85,   0   // Chomp 3
 };
 
 // Note durations in milliseconds
 const uint16_t eat_durations[EAT_SOUND_LENGTH] = {
      30,  30,  30,  30,  30,  30,  40,  // Chomp 1
-     30,  30,  30,  30,  30,  30,  40,  // Chomp 2
-     30,  30,  30,  30,  30,  30,  40   // Chomp 3
+     30,  30,  30,  30,  30,  30,  1000,  // Chomp 2
+    75,  75,  75,  150, 50,  // Fast introductory arpeggio
+    75,  75,  75,  150, 50,  // Higher octave burst
+    100, 100, 100, 100,      // Steady driving climb
+    150, 50,  150, 50,       // Punchy syncopated rhythm
+    200, 500  
+    //  30,  30,  30,  30,  30,  30,  40   // Chomp 3
 };
 
 #define REJUVENATED_LENGTH 20
@@ -356,19 +383,51 @@ static const uint16_t entertainerDurations[ENTERTAINER_LENGTH] = {
 };
 
 // Array size for loops
-#define JUMP_SOUND_LENGTH 10
+#define JUMP_SOUND_LENGTH 16
 
 // Frequencies in Hertz (Hz) - sweeping rapidly upward
 static const uint16_t JUMP_FREQUENCIES[JUMP_SOUND_LENGTH] = {
-    150, 222, 294, 366, 438, 511, 583, 655, 727, 800
+    150, 222, 294, 366, 438, 511, 583, 655, 727, 800,
+    523, // Rapid pickup note
+    659, // Rapid pickup note
+    784, // Rapid pickup note
+    1047, // Staccato anticipation
+    0,       // Short rest for crisp 8-bit separation
+    1568  // The big finish!
 };
 
 // Note durations in milliseconds (ms) - fast 25ms bursts per step
-static const uint16_t  JUMP_DURATIONS[JUMP_SOUND_LENGTH] = {
-    25,  25,  25,  25,  25,  25,  25,  25,  25,  25
+static const uint16_t JUMP_DURATIONS[JUMP_SOUND_LENGTH] = {
+    25,  25,  25,  25,  25,  25,  25,  25,  25,  25,
+        50,  // C5 (very fast)
+    50,  // E5 (very fast)
+    50,  // G5 (very fast)
+    120, // C6 (held slightly)
+    30,  // Rest (silence)
+    400  // G6 (long sustained triumphant note)
 };
 
-#include <stdint.h>
+#define TADA_NOTE_COUNT 6
+
+// Frequencies array (in Hz)
+static const uint16_t tada_frequencies[TADA_NOTE_COUNT] = {
+    523, // Rapid pickup note
+    659, // Rapid pickup note
+    784, // Rapid pickup note
+    1047, // Staccato anticipation
+    0,       // Short rest for crisp 8-bit separation
+    1568  // The big finish!
+};
+
+// Durations array (in milliseconds)
+static const uint16_t tada_durations[TADA_NOTE_COUNT] = {
+    50,  // C5 (very fast)
+    50,  // E5 (very fast)
+    50,  // G5 (very fast)
+    120, // C6 (held slightly)
+    30,  // Rest (silence)
+    400  // G6 (long sustained triumphant note)
+};
 
 // Total notes in the repeating main melody loop
 #define LUCID_DREAMS_LENGTH 25
@@ -446,14 +505,117 @@ static const uint16_t  GAMEOVER_DURATIONS[GAMEOVER_SOUND_LENGTH] = {
     150, 150, 150, 400
 };
 
+#define RUNAWAY_LENGTH 14
+
+// Frequencies in Hertz (Hz)
+static const uint16_t runaway_frequencies[RUNAWAY_LENGTH] = {
+    440, 523, 587, 659, 784, 880, 988, 
+    880, 784, 659, 587, 523, 440, 349
+};
+
+// Durations in milliseconds (ms) - fast, frantic pace
+static const uint16_t runaway_durations[RUNAWAY_LENGTH] = {
+    60,  60,  60,  60,  60,  60,  90,  
+    60,  60,  60,  60,  60,  60,  150
+};
+
+#define NEVER_GONNA_LENGTH 519
+
+static const uint16_t never_gonna_freqs[NEVER_GONNA_LENGTH] = {
+    554, 38, 277, 184, 554, 349, 277, 184, 38, 349, 277, 184, 38, 349, 277, 184, 554, 349, 277, 184, 622, 65, 311, 261, 58, 622, 261, 207, 622, 311, 261, 207, 51, 622, 261, 207, 622, 311, 261, 207, 51, 622, 261, 207, 622, 311, 261, 207, 415, 311, 261, 207, 415, 311, 261, 207, 38, 415, 261, 207, 51, 415, 261, 207, 622, 43, 261, 207, 622, 311, 261, 207, 43, 622, 261, 207, 43, 622, 261, 207, 622, 311, 261, 207, 65, 622, 261, 207, 698, 58, 207, 174, 698, 277, 207, 174, 698, 277, 207, 174, 698, 277, 207, 174, 698, 58, 207, 174, 698, 58, 207, 174, 830, 58, 207, 174, 739, 65, 207, 174, 698, 277, 207, 174, 554, 58, 207, 174, 554, 38, 277, 184, 554, 349, 277, 184, 38, 349, 277, 184, 38, 349, 277, 184, 554, 349, 277, 184, 622, 65, 311, 261, 58, 622, 261, 207, 622, 311, 261, 207, 51, 622, 261, 207, 622, 311, 261, 207, 51, 622, 261, 207, 622, 311, 261, 207, 415, 311, 261, 207, 415, 311, 261, 207, 38, 415, 261, 207, 51, 415, 261, 207, 311, 43, 207, 155, 311, 261, 207, 155, 43, 311, 261, 207, 43, 311, 261, 207, 311, 261, 207, 155, 65, 311, 261, 207, 349, 58, 207, 174, 349, 277, 207, 174, 349, 277, 207, 174, 349, 277, 207, 174, 415, 58, 207, 174, 415, 58, 207, 174, 466, 58, 207, 174, 554, 65, 207, 174, 466, 277, 207, 174, 554, 58, 207, 174, 554, 38, 277, 184, 554, 349, 277, 184, 38, 349, 277, 184, 38, 349, 277, 184, 554, 349, 277, 184, 622, 65, 311, 261, 58, 622, 261, 207, 622, 311, 261, 207, 51, 622, 261, 207, 622, 311, 261, 207, 51, 622, 261, 207, 622, 311, 261, 207, 415, 311, 261, 207, 415, 311, 261, 207, 38, 415, 261, 207, 51, 415, 261, 207, 622, 43, 261, 207, 622, 311, 261, 207, 43, 622, 261, 207, 43, 622, 261, 207, 622, 311, 261, 207, 65, 622, 261, 207, 698, 58, 207, 174, 698, 277, 207, 174, 698, 277, 207, 174, 698, 277, 207, 174, 698, 58, 207, 174, 698, 58, 207, 174, 830, 58, 207, 174, 739, 65, 207, 174, 698, 277, 207, 174, 554, 58, 207, 174, 554, 38, 277, 184, 554, 349, 277, 184, 38, 349, 277, 184, 38, 349, 277, 184, 554, 349, 277, 184, 622, 65, 311, 261, 58, 622, 261, 207, 622, 311, 261, 207, 51, 622, 261, 207, 622, 311, 261, 207, 51, 622, 261, 207, 622, 311, 261, 207, 415, 311, 261, 207, 415, 311, 261, 207, 38, 415, 261, 207, 51, 415, 261, 207, 311, 43, 207, 155, 311, 261, 207, 155, 43, 311, 261, 207, 43, 311, 261, 207, 311, 261, 207, 155, 65, 311, 261, 207, 349, 58, 207, 174, 349, 277, 207, 174, 554, 349, 207, 174, 554, 349, 207, 174, 415, 58, 207, 174, 554, 58, 415, 174, 554, 58, 207, 174, 554, 65, 207, 174, 554, 277, 207, 174, 554, 58, 207, 174
+};
+
+static const uint16_t never_gonna_dur_ms[NEVER_GONNA_LENGTH] = {
+    28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28
+};
+
+// Number of notes in the melody
+#define LOSE_MELODY_LENGTH 14
+
+// Frequencies in Hz (0 represents a musical rest)
+static const uint16_t lose_frequencies[LOSE_MELODY_LENGTH] = {
+    1047,  // C6
+     988,  // B5
+     932,  // Bb5
+     880,  // A5
+       0,  // Rest
+     784,  // G5
+     698,  // F5
+     659,  // E5
+     587,  // D5
+       0,  // Rest
+     523,  // C5
+     392,  // G4
+     330,  // E4
+     262   // C4
+};
+
+// Durations for each note/rest in milliseconds (ms)
+static const uint16_t lose_durations[LOSE_MELODY_LENGTH] = {
+    100,  // Fast descending chromatic intro
+    100, 
+    100, 
+    150, 
+     50,  // Short pause
+    100,  // Descending breakdown
+    100, 
+    100, 
+    150, 
+     50,  // Short pause
+    150,  // Slower sad resolution
+    150, 
+    150, 
+    400   // Long final low note
+};
+
+#define MENU_CLOSE_LENGTH 2
+
+static const uint16_t menu_close_frequencies[MENU_CLOSE_LENGTH] = {
+    600,  // High pitch start
+    300   // Low pitch resolution
+};
+
+static const uint16_t menu_close_durations[MENU_CLOSE_LENGTH] = {
+    40,   // 40 ms
+    60    // 60 ms
+};
+
+#define MENU_UP_LENGTH 5
+
+// Frequencies in Hz (A4, C#5, E5, A5, C#6)
+static const uint16_t menu_up_freq[MENU_UP_LENGTH] = {440, 554, 659, 880, 1109};
+
+// Durations per note in milliseconds
+static const uint16_t menu_up_dur[MENU_UP_LENGTH]  = { 30,  30,  30,  30,   60};
+
+#define WHOOSH_LENGTH 25
+
+// Frequencies in Hz 
+static const uint16_t whoosh_frequencies[WHOOSH_LENGTH] = {
+    100, 113, 128, 145, 164, 186, 211, 239, 271, 307, 
+    348, 394, 447, 506, 574, 650, 736, 834, 945, 1071, 
+    1213, 1375, 1558, 1765, 2000
+};
+
+// Durations in milliseconds (Total duration: 300ms)
+static const uint16_t whoosh_durations[WHOOSH_LENGTH] = {
+    12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 
+    12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 
+    12, 12, 12, 12, 12
+};
+
 #define TEST_LENGTH 1
 
 const uint16_t test_freq[] = {440};
 const uint16_t test_dur_ms[]   = {1000};
 
-/* ------------------------------------------------------------------------ */
-/* State                                                                    */
-/* ------------------------------------------------------------------------ */
+////////////////////////////////////////////////
+// END OF TUNES
+// 
+// 
+// BEGINNING OF FUNCTIONS
+////////////////////////////////////////////////
+
 static TIM_HandleTypeDef s_htim;
 static uint32_t          s_timCounterClk;   /* timer counter clock, Hz       */
  
@@ -466,6 +628,12 @@ static bool              s_active;          /* true while tune in progress   */
 static uint32_t          s_noteStartMs;     /* HAL tick when note began      */
 static uint32_t          s_noteDurMs;       /* current note length, tempo-scaled */
 static uint16_t          s_tempoPercent = 100U; /* 100 = normal speed        */
+ 
+static uint8_t           s_volume = SOUND_VOLUME_DEFAULT; /* 0..100          */
+static uint32_t          s_currentArr;      /* ARR of the current pitched note */
+static bool              s_pitched;         /* current note has a pitch (not a rest) */
+static bool              s_rampActive;      /* fade-in still in progress     */
+static uint32_t          s_rampStartMs;     /* HAL tick when fade-in began   */
  
 /* ------------------------------------------------------------------------ */
 /* Helpers                                                                  */
@@ -483,18 +651,74 @@ static uint32_t get_timer_clock(void)
 #endif
 }
  
-/* Silence the output: PWM mode 1 with CCR = 0 holds the pin low. */
+/* Silence the output: PWM mode 1 with CCR = 0 holds the pin low.
+ * The update event makes it take effect now (CCR is preloaded), not at the
+ * end of the previous note's period. */
 static void tone_off(void)
 {
     __HAL_TIM_SET_COMPARE(&s_htim, SOUND_TIM_CHANNEL, 0U);
+    s_htim.Instance->EGR = TIM_EGR_UG;
 }
  
-/* Set the PWM frequency (50 % duty). freq == 0 -> silence. */
+/* Fade-in progress in ms: 0 .. SOUND_RAMP_MS. Returns SOUND_RAMP_MS (full
+ * level) once the ramp is finished or when no ramp is active. */
+static uint32_t ramp_elapsed(uint32_t nowMs)
+{
+    if (!s_rampActive) {
+        return SOUND_RAMP_MS;
+    }
+ 
+    uint32_t elapsed = nowMs - s_rampStartMs;
+    if (elapsed >= SOUND_RAMP_MS) {
+        s_rampActive = false;
+        return SOUND_RAMP_MS;
+    }
+    return elapsed;
+}
+ 
+/* Compare value for the given ARR, the current volume and the ramp position.
+ *
+ * Duty = 50 % * (volume/100)^2 * (elapsed/SOUND_RAMP_MS)
+ *   - 50 % duty is the loudest a square wave can be, so volume 100 = 50 %.
+ *   - Squaring the volume gives a roughly perceptual (log-ish) feel.
+ *   - 64-bit intermediate keeps 32-bit timers (TIM2/TIM5) from overflowing.
+ */
+static uint32_t duty_ccr(uint32_t arr, uint32_t elapsedMs)
+{
+    uint64_t scale = (uint64_t)s_volume * s_volume;     /* 0..10000          */
+    uint64_t den   = 10000ULL;
+ 
+    if (elapsedMs < SOUND_RAMP_MS) {
+        scale *= elapsedMs;
+        den   *= SOUND_RAMP_MS;
+    }
+ 
+    uint64_t half = (uint64_t)((arr + 1U) / 2U);        /* max = 50 % duty   */
+    uint64_t ccr  = (half * scale) / den;
+ 
+    if ((ccr == 0U) && (scale > 0U)) {
+        ccr = 1U;                       /* keep audible at lowest nonzero    */
+    }
+    return (uint32_t)ccr;
+}
+ 
+/* Set the PWM frequency at the current volume. freq == 0 -> silence.
+ * The pitch is always applied, even at volume 0, so raising the volume
+ * during a note brings the correct pitch back. */
 static void tone_set(uint16_t freq)
 {
     if (freq == 0U) {
+        s_pitched    = false;
+        s_rampActive = false;
         tone_off();
         return;
+    }
+ 
+    /* Silence -> sound: start a fresh fade-in (tune start, or after a rest). */
+    if (!s_pitched) {
+        s_pitched     = true;
+        s_rampStartMs = s_noteStartMs;
+        s_rampActive  = (SOUND_RAMP_MS > 0U);
     }
  
     uint32_t arr = (s_timCounterClk / (uint32_t)freq);
@@ -505,9 +729,11 @@ static void tone_set(uint16_t freq)
     if (arr < 1U) {
         arr = 1U;
     }
+    s_currentArr = arr;
  
     __HAL_TIM_SET_AUTORELOAD(&s_htim, arr);
-    __HAL_TIM_SET_COMPARE(&s_htim, SOUND_TIM_CHANNEL, (arr + 1U) / 2U);
+    __HAL_TIM_SET_COMPARE(&s_htim, SOUND_TIM_CHANNEL,
+                          duty_ccr(arr, ramp_elapsed(HAL_GetTick())));
     __HAL_TIM_SET_COUNTER(&s_htim, 0U);
     /* Force an update event so the new ARR/CCR (preloaded) take effect now
      * instead of after the previous note's (possibly very long) period. */
@@ -530,8 +756,10 @@ static void start_note(uint16_t index)
 /* Index back to 0, output silent, ready for the next Play_Tune(). */
 static void reset_playback(void)
 {
-    s_active    = false;
-    s_noteIndex = 0U;
+    s_active     = false;
+    s_noteIndex  = 0U;
+    s_pitched    = false;
+    s_rampActive = false;
     tone_off();
 }
  
@@ -582,11 +810,17 @@ HAL_StatusTypeDef Sound_Init(void)
     s_frequencies  = NULL;
     s_durations_ms = NULL;
     s_numNotes     = 0U;
+    s_volume       = SOUND_VOLUME_DEFAULT;
     reset_playback();
     return HAL_OK;
 }
  
-bool Play_Tune(const uint16_t *frequencies, const uint16_t *durations_ms, uint16_t length)
+/* volume:       0 (silent) .. 100 (loudest); values above 100 are clamped.
+ * tempoPercent: 100 = normal speed, 200 = twice as fast, 50 = half speed;
+ *               clamped to SOUND_TEMPO_MIN..SOUND_TEMPO_MAX.
+ * The tune fades in over SOUND_RAMP_MS at its start and after every rest. */
+bool Play_Tune(const uint16_t *frequencies, const uint16_t *durations_ms,
+               uint16_t length, uint8_t volume, uint16_t tempoPercent)
 {
     if ((frequencies == NULL) || (durations_ms == NULL) || (length == 0U)) {
         return false;
@@ -596,10 +830,13 @@ bool Play_Tune(const uint16_t *frequencies, const uint16_t *durations_ms, uint16
     s_frequencies  = frequencies;
     s_durations_ms = durations_ms;
     s_numNotes     = length;
+    s_volume       = (volume > 100U) ? 100U : volume;
+    Sound_SetTempo(tempoPercent);       /* clamps; applied from note 0 */
  
-    /* Start at the first note. */
+    /* Start at the first note, ramping up from silence. */
     s_noteIndex   = 0U;
     s_active      = true;
+    s_pitched     = false;          /* forces a fresh fade-in */
     s_noteStartMs = HAL_GetTick();
     start_note(0U);
  
@@ -626,6 +863,14 @@ bool Sound_Play(void)
         start_note(s_noteIndex);
     }
  
+    /* Fade-in: step the duty up while the ramp is running. Only CCR is
+     * written (no update event), so the waveform is never restarted
+     * mid-note; the new value is picked up at the next period. */
+    if (s_pitched && s_rampActive) {
+        __HAL_TIM_SET_COMPARE(&s_htim, SOUND_TIM_CHANNEL,
+                              duty_ccr(s_currentArr, ramp_elapsed(nowMs)));
+    }
+ 
     return true;
 }
  
@@ -639,6 +884,23 @@ void Sound_SetTempo(uint16_t percent)
     s_tempoPercent = percent;
 }
  
+/* Change volume (0..100) at any time. Applies to the note currently playing
+ * (taking effect at the next PWM period) and to all following notes. */
+void Sound_SetVolume(uint8_t volume)
+{
+    s_volume = (volume > 100U) ? 100U : volume;
+ 
+    if (s_active && s_pitched) {
+        __HAL_TIM_SET_COMPARE(&s_htim, SOUND_TIM_CHANNEL,
+                              duty_ccr(s_currentArr, ramp_elapsed(HAL_GetTick())));
+    }
+}
+ 
+uint8_t Sound_GetVolume(void)
+{
+    return s_volume;
+}
+ 
 void Sound_Stop(void)
 {
     reset_playback();
@@ -650,43 +912,78 @@ bool Sound_IsPlaying(void)
 }
 
 // Play Functions
+void PlayDance() {
+    int r = rand() % 101;
+
+    if (r >= 50) {
+        Play_Tune(nokia_freq, nokia_dur_ms, NOKIA_LENGTH, 100, 75); 
+    }
+    else {
+        Play_Tune(VON_FREQ, VON_DUR, VON_LENGTH, 100, 75); 
+    }
+}
 void PlayNokiaRingtone() {
-    Sound_SetTempo(75);
-    Play_Tune(nokia_freq, nokia_dur_ms, NOKIA_LENGTH); 
+    Play_Tune(nokia_freq, nokia_dur_ms, NOKIA_LENGTH, 100, 75); 
 }
 
 void PlayPokemonTheme() {
-    Play_Tune(poke_battle_theme_freqs, poke_battle_theme_durations, POKE_BATTLE_THEME_LENGTH); 
+    Play_Tune(poke_battle_theme_freqs, poke_battle_theme_durations, POKE_BATTLE_THEME_LENGTH, 100, 100); 
 }
 
 void PlayAlert() {
-    Play_Tune(alert_freq, alert_dur_ms, ALERT_LENGTH); 
+    Play_Tune(alert_freq, alert_dur_ms, ALERT_LENGTH, 100, 100); 
 }
 
 void PlayEatingSound() {
-    Play_Tune(eat_frequencies, eat_durations, EAT_SOUND_LENGTH); 
+    Play_Tune(eat_frequencies, eat_durations, EAT_SOUND_LENGTH, 100, 100); 
 }
 
 void PlayJump() {
-    Play_Tune(JUMP_FREQUENCIES, JUMP_DURATIONS, JUMP_SOUND_LENGTH); 
+    Play_Tune(JUMP_FREQUENCIES, JUMP_DURATIONS, JUMP_SOUND_LENGTH, 100, 100); 
 }
 
 void PlayVon() {
-    Sound_SetTempo(50);
-    Play_Tune(VON_FREQ, VON_DUR, VON_LENGTH); 
+    Play_Tune(VON_FREQ, VON_DUR, VON_LENGTH, 100, 50); 
 }
 
 void PlayRejuvenated() {
-    Play_Tune(REJUVENATED_MELODY_FREQ, REJUVENATED_MELODY_DUR, REJUVENATED_LENGTH); 
+    Play_Tune(REJUVENATED_MELODY_FREQ, REJUVENATED_MELODY_DUR, REJUVENATED_LENGTH, 100, 100); 
 }
 
 void PlayLucidDreams() {
-    Sound_SetTempo(75);
-    Play_Tune(lucid_dreams_freqs, lucid_dreams_durations, LUCID_DREAMS_LENGTH); 
+    Play_Tune(lucid_dreams_freqs, lucid_dreams_durations, LUCID_DREAMS_LENGTH, 100, 100); 
 }
 
 void PlayGameOver() {
-    Play_Tune(GAMEOVER_FREQUENCIES, GAMEOVER_DURATIONS, GAMEOVER_SOUND_LENGTH); 
+    Play_Tune(GAMEOVER_FREQUENCIES, GAMEOVER_DURATIONS, GAMEOVER_SOUND_LENGTH, 100, 100); 
+}
+
+void PlayRunAway() {
+    Play_Tune(runaway_frequencies, runaway_durations, RUNAWAY_LENGTH, 100, 100); 
+}
+
+void PlayNeverGonna() {
+    Play_Tune(never_gonna_freqs, never_gonna_dur_ms, NEVER_GONNA_LENGTH, 100, 75); 
+}
+
+void PlayLose() {
+    Play_Tune(lose_frequencies, lose_durations, LOSE_MELODY_LENGTH, 100, 100); 
+}
+
+void PlayMenuConfirm() {
+    Play_Tune(menu_close_frequencies, menu_close_durations, MENU_CLOSE_LENGTH, 100, 100); 
+}
+
+void PlayMenuCycle() {
+    Play_Tune(menu_up_freq, menu_up_dur, MENU_UP_LENGTH, 100, 100); 
+}
+
+void PlayWhoosh() {
+    Play_Tune(whoosh_frequencies, whoosh_durations, WHOOSH_LENGTH, 100, 100); 
+}
+
+void PlayChime() {
+    Play_Tune(chime_frequencies, chime_durations, CHIME_LENGTH, 100, 100); 
 }
 
 // Notes: Sound_Play() returns true or false to play again

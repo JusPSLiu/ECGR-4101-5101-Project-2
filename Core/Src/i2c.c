@@ -1,4 +1,5 @@
 #include "i2c.h"
+#include "ili9341.h"
 #include "stm32l4xx_hal_def.h"
 
 
@@ -26,6 +27,7 @@ void MX_I2C1_Init(void)
   if (HAL_I2C_Init(&hi2c1) != HAL_OK)
   {
     Error_Handler();
+    ILI9341_FillScreen(ILI9341_COLOR_GREEN);
   }
 
   /** Configure Analogue filter
@@ -170,4 +172,23 @@ HAL_StatusTypeDef MPU9250_WakeUp(void) {
                                                  1, 
                                                  HAL_MAX_DELAY);
     return status;
+}
+
+void MPU_Diag(void) {
+  char line[24];
+  uint8_t who = 0xFF;
+
+  HAL_StatusTypeDef s1 = HAL_I2C_IsDeviceReady(&hi2c1, 0x68 << 1, 3, 20);
+  uint32_t e1 = hi2c1.ErrorCode;
+  uint32_t busy = __HAL_I2C_GET_FLAG(&hi2c1, I2C_FLAG_BUSY) ? 1 : 0;
+
+  HAL_StatusTypeDef s2 = HAL_I2C_Mem_Read(&hi2c1, 0x68 << 1, 0x75,
+                                          I2C_MEMADD_SIZE_8BIT, &who, 1, 20);
+  uint32_t e2 = hi2c1.ErrorCode;
+
+  snprintf(line, sizeof(line), "rdy:%d err:%02lX bsy:%lu", s1, e1, busy);
+  ILI9341_DrawString(0, 0, line, ILI9341_COLOR_BLUE, ILI9341_COLOR_WHITE, 2);
+  snprintf(line, sizeof(line), "who:%02X st:%d e:%02lX", who, s2, e2);
+  ILI9341_DrawString(0, 20, line, ILI9341_COLOR_BLUE, ILI9341_COLOR_WHITE, 2);
+  while (1) {}   // park here so you can read it
 }

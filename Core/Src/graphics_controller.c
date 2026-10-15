@@ -1,4 +1,5 @@
 #include "graphics_controller.h"
+#include "sounds.h"
 #include "sprite.h"
 
 #define SPRITEX 40

@@ -42,10 +42,10 @@
 #include "catch_stars.h"
 #include "pet_stats.h"
 #include "i2c.h"
+#include "sounds.h"
 #include "stm32l4xx_hal.h"
 #include <math.h>
 #include "mpu9250.h"
-#include "sounds.h"
 
 /* Private variables ---------------------------------------------------------*/
 SPI_HandleTypeDef hspi1;
@@ -97,6 +97,11 @@ uint8_t screen_refresh = 1;
 uint8_t input_debounce = 0;
 static uint8_t center_release_required;
 
+uint32_t last_flip;
+
+MPU9250AccelerometerData_t mpu9250Data;
+float delta;
+
 /**
  * @brief  The application entry point.
  * @retval int
@@ -109,6 +114,9 @@ int main(void) {
   // init peripherals
   MX_GPIO_Init();
   MX_SPI1_Init();
+  MPU9250_Power_Init();
+  HAL_Delay(250); // added delay bc if gpio pin is not high quick enough imu will not turn on/error out
+
   // init lcd
   ILI9341_Init(&hspi1);
   ILI9341_FillScreen(ILI9341_COLOR_WHITE);
@@ -119,10 +127,27 @@ int main(void) {
     // show the right animation for the loaded state (e.g. still dead after a power-off)
   updateAnimState();
 
+  // HAL_Delay(1000);
+  MX_I2C1_Init();
+  Sound_Init();
+  
+  if (MPU9250_WakeUp() != HAL_OK) {
+    // ILI9341_FillScreen(ILI9341_COLOR_RED);
+    // debugging if mpu was turning on
+  } 
+  else {
+    // ILI9341_FillScreen(ILI9341_COLOR_GREEN);
+    // debugging if mpu was turning on
+  }
+
   // main loop
   while (1) {
     uint32_t now = HAL_GetTick();
     uint8_t joy = Joystick_Read();
+    Sound_Play();
+
+    mpu9250Data = readMPU9250();
+    delta = getDelta(mpu9250Data.ay);
 
     if (updateCatchStars(joy)) continue;
 
@@ -138,13 +163,25 @@ int main(void) {
       if (PetStats_IsStarving()) {
         pet.state = PET_DEAD;          // too hungry - the pet dies
         triggerAnim(anim_die);         // play the death animation once
+        PlayLose();
         updateAnimState();             // then loop the dead animation
         PetStats_SaveNow();            // save right away (rare event - safe for flash wear)
       } else if (PetStats_IsMiserable()) {
         pet.state = PET_RAN_AWAY;      // too unhappy -> the pet runs away
         triggerAnim(anim_leave);
+        PlayRunAway();
         updateAnimState();
         PetStats_SaveNow();            // save right away (rare event - safe for flash wear)
+      }
+      else if (detectSingleAxisShake(delta) && now - last_flip >= LAST_FLIP_WINDOW && pet.hunger > DANCE_HUNGER_COST) {
+        if (pet.happiness < STAT_MAX) clamp(pet.happiness += DANCE_HAPPY_AMOUNT, STAT_MIN, STAT_MAX);
+        pet.hunger -= DANCE_HUNGER_COST;
+      
+        triggerAnim(anim_backflip);
+        updateAnimState();
+        PlayJump();
+
+        last_flip = now;
       }
     }
 
@@ -169,6 +206,7 @@ int main(void) {
       updateHud();
       characterLogic();
     }
+    
   }
 }
 
@@ -178,13 +216,19 @@ static uint8_t updateCatchStars(uint8_t joy) {
     return 0;
   }
 
+  if (!Sound_IsPlaying()) {
+    PlayNeverGonna();
+  }
+
   catchStarsUpdate((joy & JOY_LEFT_MASK) != 0,
                    (joy & JOY_RIGHT_MASK) != 0,
                    (joy & JOY_CENTER_MASK) != 0);
   if (!catchStarsIsActive()) {
     center_release_required = 1;
     screen_refresh = 1;
+    Sound_Stop();
   }
+
   return 1;
 }
 
@@ -233,14 +277,23 @@ void readInputs(uint8_t joy) {
 
 
 void performAction(int selection) {
-  if (pet.state == PET_DEAD) return;
+  if (selection == 3) {
+    PetStats_Reset();
+    PlayChime();
+    return;
+  }
+  
+  if (pet.state == PET_DEAD || pet.state == PET_RAN_AWAY) return;
+  
   switch (selection) {
     case 0:
       feed();
+      PlayEatingSound();
       break;
 
     case 1:
       dance();
+      PlayDance();
       break;
 
     case 2:
@@ -248,15 +301,22 @@ void performAction(int selection) {
       catchStarsStart();
       endAnim();
       break;
-    
-    case 3:
-      PetStats_Reset();
+
+    case 4:
+    pet.hunger = 10;
+    break;
+
+    case 5:
+    pet.happiness = 2;
+    break;
 
     default:
+      PlayMenuConfirm();
       break;
   }
-}
 
+  
+}
 
 static uint8_t Joystick_Read(void) {
   uint8_t state = 0;
